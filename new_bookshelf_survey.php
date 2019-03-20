@@ -12,7 +12,6 @@ $a_array = array( 'init_page',
 'list_nick',
 'list_books',
 'continue_search');
-
 ?>
 
 <?php
@@ -56,7 +55,7 @@ $a_array = array( 'init_page',
 	$list_books = false;
 	$continue_search = false;
 	$action = book_action($_POST);
-	$t1 = $_SESSION['t1'];
+	//$t1 = $_SESSION['t1'];
 	if ($action == 0) {$init_page = true;}
 	if ($action == 1) {$awaiting_input = true;}
 	if ($action == 2) {$google_search = true;}
@@ -174,7 +173,6 @@ file_put_contents('/var/www/html/wp-content/themes/yaaburnee-themes-child/new_bo
 <?php //  get_header(); ?>
 <!DOCTYPE html>
 
-
 <head>
 <h1 class="header">Saker BookShelf Survey</h1>
 <style>
@@ -250,67 +248,78 @@ function help_instructions() {
       	<img src="http://vsaker.net/wp-content/uploads/2019/02/saker_body-300x200.jpg" alt="" width="300" height="200" class="alignnone size-medium wp-image-200">
 	<p> We are asking our readers to submit the titles and authors of their favorite books. These will be reviewed and selected books will be included in the BookShelf.
 	</p>
-    </div>
-
-    <div class="form">
+    </div><!-- contact -->  
+ <div class="form">
       <h3>Favorite Books</h3>
-      <form id="theBookForm" name="theBookForm" action="" method="post" >
-	<div class="searchterm">
+      <form id="theBookForm" name="theBookForm" action="" method="post" >     
+<!-- Enter title, author, isbn -->
+		<div class="searchterm">
           <label style="font-size:20px; font-weight:800; " for="">Enter title, author, isbn number</label>
 	  <input style="width:100%;" type="text" name="t1" value="<?php echo $t1; ?>">
 	  <input type="hidden" name="bookshelf_survey" value="1">
 	  <input type="hidden" name="bookselected" value="6">
+	</div>	
+<!-- /title, author, isbn -->
+<!--** Left column = Search/Select, Clear, Help -->
+	<div id="leftcol">
+		  <div>
+			<?php
+			if ($google_search || $continue_search || $db_update_google_search)
+			{
+			echo '<button  onclick="whichBook()" id="selBtn" >Press here to Select Book</button>';
+			}
+			else
+			{
+			echo '<button  onclick="submitClick()" id="formSubmit">Search for Book</button>';
+			}
+			?>
+		  </div>
+		  <div>
+			<button  onclick="clear_form()" id="clear_button">Clear</button>
+		  </div>
+		  <div>
+			<button  onclick="help_instructions()" id="help_button">Help</button>
+		  </div>
 	</div>
-	  <?php if ($action <= '1' || $action == 6)
-	  {
-		echo '<div>';
-          	echo '<label style="font-size:20px; font-weight:800; " for="">Your Library Name</label>';
-          	echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;"   type="text" placeholder="Optional not required ..." name="nick">';
-		echo '</div>';
-		echo '<div>';
-          	echo '<label style="font-size:20px; font-weight:800; " for=""> Bookshelf Name</label>';
-          	echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;"   type="text" placeholder="Optional not required ..." name="bs_personal">';
-		echo '</div>';
-	  }
-	  else
-	  {
-		echo '<div>';
-          	echo '<label style="font-size:20px; font-weight:800; " for="">Nickname</label>';
-		echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;" value="';
-		echo  $nick;
-		echo '" type="text" readonly name="nick">';
-		echo '</div>';
-		echo '<div>';
-          	echo '<label style="font-size:20px; font-weight:800; " for="">Personal BookShelf Name</label>';
-		echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;" value="';
-	     	echo $shelf; 
-		echo '" type="text" readonly name="bs_personal">';
-		echo '</div>';
-		 
-	  }
-	 ?>
-	  <div>
-		<?php
-		if ($google_search || $continue_search || $db_update_google_search)
-		{
-		echo '<button  onclick="whichBook()" id="selBtn" >Press here to Select Book</button>';
-		}
-		else
-		{
-		echo '<button  onclick="submitClick()" id="formSubmit">Search for Book</button>';
-		}
-		?>
-	  </div>
-	  <div>
+<!-- /left column -->
+<!--** Right column = My Library Name , Bookshelf name-->
+	<div id="rightcol">
+		<h3>Add book to Favorites</h3>
+		  <?php if ($action <= '1' || $action == 6)
+		  {
+			echo '<div>';
+				echo '<label style="font-size:16px; font-weight:800; " for="">My Library (Name)</label>';
+				echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;"   type="text" placeholder="Optional not required ..." name="nick">';
+			echo '</div>';
+			echo '<div>';
+				echo '<label style="font-size:16px; font-weight:800; " for="">My Bookshelf</label>';
+				echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;"   type="text" placeholder="Optional not required ..." name="bs_personal">';
+			echo '</div>';
+		  }	  
+		  else
+		  {
+			echo '<div>';
+				echo '<label style="font-size:20px; font-weight:800; " for="">Nickname</label>';
+			echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;" value="';
+			echo  $nick;
+			echo '" type="text" readonly name="nick">';
+			echo '</div>';
+			echo '<div>';
+				echo '<label style="font-size:20px; font-weight:800; " for="">Personal BookShelf Name</label>';
+			echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;" value="';
+				echo $shelf; 
+			echo '" type="text" readonly name="bs_personal">';
+			echo '</div>';		 
+		  }	
+		 ?>
+	</div>
+<!-- /right column --> 
+<!-- View Library --> 
+	<div id="view">
 		<button  onclick="view_lib()" id="view_button">View Library</button>
-	  </div>
-	  <div>
-		<button  onclick="clear_form()" id="clear_button">Clear</button>
-	  </div>
-	  <div>
-		<button  onclick="help_instructions()" id="help_button">Help</button>
-	  </div>
-      </form>
+		</div>
+<!-- /view --> 
+</form>
 <?php
 if ($radio_buttons) {
 	echo "<div class='radios'  >";
@@ -334,7 +343,7 @@ if (isset($the_selected_book[0]))
 echo "</div>";
 }
 ?>
-     </div>  <!-- contact -->
+     </div>
      </div>  <!-- end of wrapper -->
      <div class='wrapper-2'>
 <?php
@@ -385,6 +394,6 @@ if ($radio_buttons) {
 ?>
      </div>
   </div>
-</div>;
+</div>
 </body>
 </html>
