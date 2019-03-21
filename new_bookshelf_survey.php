@@ -64,7 +64,7 @@ $a_array = array( 'init_page',
 	if ($action == 5) {$list_nick = true;}
 	if ($action == 6) {$list_books = true;}
 	if ($action == 7) {$continue_search = true;}
-	print_r('action:'.$action);
+	//print_r('action:'.$action);
 
 	if ($list_books) {
 		$_SESSION['screen'] = '6';
@@ -174,7 +174,7 @@ file_put_contents('/var/www/html/wp-content/themes/yaaburnee-themes-child/new_bo
 <!DOCTYPE html>
 
 <head>
-<h1 class="header">Saker BookShelf Survey</h1>
+<h1 class="header">Saker BookShelf</h1>
 <style>
 <?php include 'new_bookshelf_survey.css'; ?> 
 </style>
@@ -236,6 +236,15 @@ function clear_form()
   	document.forms["theBookForm"].submit();
 }
 function help_instructions() {
+	alert("help button pressed");
+}
+function delete_book()
+{
+	alert("Delete Button pressed");
+}
+function view_lib()
+{
+    /* future code goes here */
 }
 </script>
 </head>
@@ -262,7 +271,7 @@ function help_instructions() {
 <!-- /title, author, isbn -->
 <!--** Left column = Search/Select, Clear, Help -->
 	<div id="leftcol">
-		  <div>
+		  <div id="select_id">
 			<?php
 			if ($google_search || $continue_search || $db_update_google_search)
 			{
@@ -274,14 +283,26 @@ function help_instructions() {
 			}
 			?>
 		  </div>
-		  <div>
-			<button  onclick="clear_form()" id="clear_button">Clear</button>
-		  </div>
-		  <div>
-			<button  onclick="help_instructions()" id="help_button">Help</button>
-		  </div>
+<!-- View Library --> 
+	<div id="view_id">
+		<button  onclick="view_lib()" id="view_button">View Library</button>
+		</div>
+<!-- /view --> 
+<!-- Delete button--> 
+	<div id="delete_id">
+		<button  onclick="delete_book()" id="delete_button">Delete Book</button>
 	</div>
+<!-- /delete --> 
+
+<!-- clear  --> 
+        <div id="clear_id">
+			<button  onclick="clear_form()" id="clear_button">Clear</button>
+        </div>
+<!-- /clear  --> 
+
+	</div> <!-- left column ends  -->
 <!-- /left column -->
+
 <!--** Right column = My Library Name , Bookshelf name-->
 	<div id="rightcol">
 		<h3>Add book to Favorites</h3>
@@ -299,36 +320,35 @@ function help_instructions() {
 		  else
 		  {
 			echo '<div>';
-				echo '<label style="font-size:20px; font-weight:800; " for="">Nickname</label>';
+				echo '<label style="font-size:20px; font-weight:800; " for="">My Library</label>';
 			echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;" value="';
 			echo  $nick;
 			echo '" type="text" readonly name="nick">';
 			echo '</div>';
 			echo '<div>';
-				echo '<label style="font-size:20px; font-weight:800; " for="">Personal BookShelf Name</label>';
+				echo '<label style="font-size:20px; font-weight:800; " for="">My BookShelf Name</label>';
 			echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;" value="';
 				echo $shelf; 
 			echo '" type="text" readonly name="bs_personal">';
 			echo '</div>';		 
 		  }	
 		 ?>
+
+		  <div id="help_id">
+			<button  onclick="help_instructions()" id="help_button">Help</button>
+		  </div>
 	</div>
 <!-- /right column --> 
-<!-- View Library --> 
-	<div id="view">
-		<button  onclick="view_lib()" id="view_button">View Library</button>
-		</div>
-<!-- /view --> 
 </form>
 <?php
 if ($radio_buttons) {
-	echo "<div class='radios'  >";
-echo  "<input type='radio'   name='chooseone' value='2' id='r1'><label class='radio' for='r1'>  $booktitles[0]</label><br>";
-echo  "<input type='radio'   name='chooseone' value='2' id='r2'><label class='radio' for='r2'>  $booktitles[1]</label><br>";
-echo  "<input type='radio'   name='chooseone' value='3' id='r3'><label class='radio' for='r3'>  $booktitles[2]</label><br>";
-echo  "<input type='radio'   name='chooseone' value='4' id='r4'><label class='radio' for='r4'>  $booktitles[3]</label><br>";
-echo  "<input type='radio'   name='chooseone' value='5' id='r5'><label class='radio' for='r5'>  $booktitles[4]</label><br>";
-echo  "<input type='radio'   name='chooseone' value='6' id='r6' checked='checked' ><label class='radio' for='r6'> none of the above </label><br>";
+echo "<div class='radios'  >";
+echo  "<input type='radio'   name='chooseone' value='1' id='r1'><label class='radiosel' for='r1'>  $booktitles[0]</label><br>";
+echo  "<input type='radio'   name='chooseone' value='2' id='r2'><label class='radiosel' for='r2'>  $booktitles[1]</label><br>";
+echo  "<input type='radio'   name='chooseone' value='3' id='r3'><label class='radiosel' for='r3'>  $booktitles[2]</label><br>";
+echo  "<input type='radio'   name='chooseone' value='4' id='r4'><label class='radiosel' for='r4'>  $booktitles[3]</label><br>";
+echo  "<input type='radio'   name='chooseone' value='5' id='r5'><label class='radiosel' for='r5'>  $booktitles[4]</label><br>";
+echo  "<input type='radio'   name='chooseone' value='6' id='r6' checked='checked' ><label class='radiosel' for='r6'> none of the above </label><br>";
 }
 echo "</div>";
 ?>

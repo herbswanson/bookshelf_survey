@@ -20,8 +20,8 @@ input,
 checkbox,
 textarea {
   padding: 1em;
-  margin-bottom: 20px;
-  width: calc(100% - 2em);
+  margin-bottom: 10px;
+  width: 100%
 }
 button:hover, button:focus {
   background: gold;
@@ -84,11 +84,12 @@ ul {
 }
 
 form {
+/*
  display: grid;
  grid-template-columns: auto auto;
  grid-template-rows: auto;
  grid-gap: 20px;
- /*width: 100%;*/
+*/
 }
 
 form label {
@@ -109,13 +110,26 @@ input[type='checkbox'], label{
     vertical-align: baseline;
     padding: 0px;
     margin: 0px;
- }
+}
 input[type='textarea'], label{   
     vertical-align: baseline;
     margin-bottom: 6px;
- }	
- #view {
-	margin-top: -62px;
+}	
+#view_id {
+    margin-top: 0px;
+}
+#delete_id {
+    margin-top 0px;
+}
+#select_id {
+    margin-top: 0px;
+}
+#clear_id {
+    margin-top 0px;
+}
+#help_id {
+    margin-top 0px;
+    width: 100%;
 }
 
 .header {
@@ -161,8 +175,12 @@ body
   padding-left:  10px;
   background: #ffffff;
 }
+.radiosel {
+    clear:both;
+}
 
 .radios {
+        clear:both;
 	position:relative;
 	top:-2px;
 	left:0px;
@@ -170,6 +188,7 @@ body
 
 .radios input[type=radio] {
   /*  display: none; */
+    clear:both;
 }
 
 .radios input[type=radio]:checked {
@@ -246,3 +265,11 @@ box-shadow: 0px 0px 1px 7px #cccccc;
 	position: relative;
 	top: -30px;
 }
+#leftcol {
+	width: 60%;
+	float: left;
+}
+#rightcol {
+	float: right;
+}
+
