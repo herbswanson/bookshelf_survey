@@ -11,7 +11,9 @@ $a_array = array( 'init_page',
 'db_update_google_search',
 'list_nick',
 'list_books',
-'continue_search');
+'continue_search' ,
+'delete_books'
+);
 ?>
 
 <?php
@@ -22,7 +24,7 @@ $a_array = array( 'init_page',
 	$log_msg = date("Y-m-d H:i:s");
 	$log_msg .= trim(print_r($_POST,true));
 	$log_msg = $log_msg . "screen_in:" . $a_array[$tmp]; 
-//	print_r($_POST);
+	print_r($_POST);
 	if ((count($_POST)) == 0)
 	{
 		$action = 0;
@@ -40,6 +42,7 @@ $a_array = array( 'init_page',
 		$ckbox_list_nick = false;
 		$list_nick = false;
 		$list_books = false;
+                $delete_books = false;
 		$continue_search = false;
 		goto very_first;
 	}
@@ -54,6 +57,7 @@ $a_array = array( 'init_page',
 	$list_nick = false;
 	$list_books = false;
 	$continue_search = false;
+        $delete_books = false;
 	$action = book_action($_POST);
 	//$t1 = $_SESSION['t1'];
 	if ($action == 0) {$init_page = true;}
@@ -64,6 +68,7 @@ $a_array = array( 'init_page',
 	if ($action == 5) {$list_nick = true;}
 	if ($action == 6) {$list_books = true;}
 	if ($action == 7) {$continue_search = true;}
+	if ($action == 8) {$delete_books = true;}
 	//print_r('action:'.$action);
 
 	if ($list_books) {
@@ -72,7 +77,20 @@ $a_array = array( 'init_page',
 		$_SESSION['shelf'] = $_POST['bs_personal'];
 		$_SESSION['t1'] = $_POST['t1'];
 		$t1 = $_SESSION['t1'];
+		$nick  = $_POST['nick'];
+		$shelf = $_POST['bs_personal'];
 	}
+
+	if ($delete_books) {
+		$_SESSION['screen'] = '6';
+		$_SESSION['nick'] = $_POST['nick'];
+		$_SESSION['shelf'] = $_POST['bs_personal'];
+		$_SESSION['t1'] = $_POST['t1'];
+		$t1 = $_SESSION['t1'];
+		$nick  = $_POST['nick'];
+		$shelf = $_POST['bs_personal'];
+	}
+
 
 	if ($db_update_google_search)
 	{
@@ -186,6 +204,10 @@ $(document).ready(function() {
   	document.theBookForm.bookshelf_survey.value = '2';
         $( "#theBookForm" ).submit();
     });
+    $( "#delete_button" ).click(function() {
+  	document.theBookForm.bookshelf_survey.value = '3';
+        $( "#theBookForm" ).submit();
+    });
     $("#nick_in").on("input", function() {
   	document.theBookForm.nick.value = this.value;
     });
@@ -197,16 +219,6 @@ $(document).ready(function() {
 function submitClick()
 {
 	/***
-	document.getElementById('formSubmit').style.visibility='hidden';
-	document.getElementById('formSubmit').disabled=true;
-  	document.forms["theBookForm"].submit();
-	document.getElementById('selBtn').style.visibility='visible';
-	document.getElementById('selBtn').disabled=false;
-	document.getElementById('formSubmit').setAttribute('style','visibility:hidden');
-	document.getElementById('formSubmit').disabled=true;
-  	document.forms["theBookForm"].submit();
-	document.getElementById('selBtn').setAttribute('style','visibility:visible');
-	document.getElementById('selBtn').disabled=false;
 	****/
 }
 function nickfill()
@@ -217,14 +229,6 @@ function whichBook()
 {
   	book_sel = document.querySelector('input[name="chooseone"]:checked').value;
   	document.theBookForm.bookselected.value = book_sel;
-	/**********
-	if (book_sel == 6 ) {
-		document.theBookForm.bookselected.value = '6';
-  		document.theBookForm.nick.value = '';
-  		document.theBookForm.bs_personal.value = '';
-  		document.theBookForm.t1.value = '';
-  	}
-**********/
   	document.forms["theBookForm"].submit();
 }
 function clear_form()
@@ -245,6 +249,30 @@ function delete_book()
 function view_lib()
 {
     /* future code goes here */
+}
+function rowSelection(r,dbooks)
+{
+    var cidx = 3;
+    var qnum  = (document.getElementById('sqlquery_num').innerHTML);
+    switch (qnum){
+        case '1':
+            cidx = 3
+            break;
+        case  '2':
+            cidx = 2;
+            break;
+        case  '3':
+            cidx = 2;
+            break;
+        default:
+            console.log('Unknown query string from rowSelection function');
+    }
+    var table = (document.getElementById('table_of_books'));
+    var book_key = (table.rows[r.rowIndex].cells[cidx].innerHTML);
+    if (!dbooks){
+        document.theBookForm.t1.value = book_key;
+        document.forms["theBookForm"].submit();
+    }
 }
 </script>
 </head>
@@ -285,12 +313,12 @@ function view_lib()
 		  </div>
 <!-- View Library --> 
 	<div id="view_id">
-		<button  onclick="view_lib()" id="view_button">View Library</button>
+		<button  id="view_button">View Library</button>
 		</div>
 <!-- /view --> 
 <!-- Delete button--> 
 	<div id="delete_id">
-		<button  onclick="delete_book()" id="delete_button">Delete Book</button>
+		<button  id="delete_button">Delete Book</button>
 	</div>
 <!-- /delete --> 
 
@@ -321,15 +349,11 @@ function view_lib()
 		  {
 			echo '<div>';
 				echo '<label style="font-size:20px; font-weight:800; " for="">My Library</label>';
-			echo '<input id="nick_in" style="width:100%; line-height:1em;font-size:15px;" value="';
-			echo  $nick;
-			echo '" type="text" readonly name="nick">';
+			echo "<input id='nick_in' style='width:100%; line-height:1em;font-size:15px;' value='$nick'  type='text' readonly name='nick'>";
 			echo '</div>';
 			echo '<div>';
 				echo '<label style="font-size:20px; font-weight:800; " for="">My BookShelf Name</label>';
-			echo '<input id="shelf_in" style="width:100%; line-height:1em;font-size:15px;" value="';
-				echo $shelf; 
-			echo '" type="text" readonly name="bs_personal">';
+			echo "<input id='shelf_in' style='width:100%; line-height:1em;font-size:15px;' value='$shelf' type='text' readonly name='bs_personal'>";
 			echo '</div>';		 
 		  }	
 		 ?>
@@ -406,11 +430,22 @@ if ($radio_buttons) {
 	if ($list_books) {
 		$nick = trim($_SESSION['nick']);
 		$shelf = trim($_SESSION['shelf']);
-		build_booklists($t1,$nick,$shelf);
+                $dbooks = false;
+		build_booklists($t1,$nick,$shelf,$dbooks);
+		$_SESSION['nick'] = '';
+		$_SESSION['shelf'] = '';
+		$_SESSION['t1'] = '';
+        }
+        if ($delete_books) {
+                $dbooks = true; 
+		$nick = trim($_SESSION['nick']);
+		$shelf = trim($_SESSION['shelf']);
+		build_booklists($t1,$nick,$shelf,$dbooks);
 		$_SESSION['nick'] = '';
 		$_SESSION['shelf'] = '';
 		$_SESSION['t1'] = '';
 	}
+
 ?>
      </div>
   </div>

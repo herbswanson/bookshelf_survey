@@ -111,12 +111,17 @@ function book_action($postarray)
 	$list_nick_books = 5;
 	$list_books = 6;
 	$continue_search = 7;
+        $delete_books = 8;
 
 	
 	if ($postarray['bookshelf_survey'] == '2')
 	{
 		return $list_books;
 	}
+	if ($postarray['bookshelf_survey'] == '3')
+	{
+		return $delete_books;
+        }
 	if ($postarray['t1'] != '' && $postarray['bookselected'] != '6')
 	{
 		if ($postarray['t1'] == $_SESSION['t1']) {
@@ -154,7 +159,7 @@ function book_action($postarray)
 	return $init_page;
 
 }
-function build_booklists($t1,$nick,$shelf) {
+function build_booklists($t1,$nick,$shelf,$dbooks) {
 global $wpdb;
 if ($t1 == '' && $nick == null )
 {
@@ -177,7 +182,8 @@ else
 	$query = "select a.title,a.author,a.id,b.nick_id,b.shelf_name, a.knt from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.id=b.book_id where b.nick_id = '$nick' and b.shelf_name = '$shelf' order by  shelf_name,title";
 }
 $result = $wpdb->get_results( $query);
-echo '<table border="1" style="width:100%">';
+echo "<p hidden id='sqlquery_num'>$q</p>";
+echo "<table id='table_of_books' border='2px' style='width:100%;'>";
 
 var_dump($q);
 switch ($q)
@@ -188,27 +194,43 @@ case 1:
 	echo '    <th>Title</th>';
 	echo '    <th>Author</th>';
 	echo '    <th>Key</th>';
-	echo '  </tr>';
+        if ($dbooks) {
+            echo '    <th>Delete</th>';
+        }
+	echo "</tr>";
+	$row_nm = 0;
+        $k = 1;
 	foreach ($result as $row ) {
-		echo "<tr>" ;
+                $row_nm =  "rlib". $k;
+                $k += 1; 
+                        
+                if (!$dbooks){
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class'>" ;
+                } else {
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class_delete'>" ;
+                }
 			echo "<td>" . $row->knt . "</td>";
-			echo "<td>" . $row->title . "</td>";
+			echo "<td> " . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->id . "</td>";
+
+                        if ($dbooks){
+                        echo "<td><input type='checkbox' name='$row_nm'   class='chk'></td>"; 
+                        }
 		echo "</tr>";
-	}
+            }
 	break;
 case 2:
 	echo '  <tr>';
 	echo '    <th>Title</th>';
 	echo '    <th>Author</th>';
 	echo '    <th>Key</th>';
-	echo '    <th>Nickname</th>';
+	echo '    <th>Library</th>';
 	echo '    <th>Shelf</th>';
 	echo '    <th>Count</th>';
 	echo '  </tr>';
 	foreach ($result as $row ) {
-		echo "<tr>" ;
+		echo "<tr onclick='rowSelection(this)' class='row_class'>" ;
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->id . "</td>";
@@ -228,7 +250,7 @@ case 3:
 	echo '    <th>Count</th>';
 	echo '  </tr>';
 	foreach ($result as $row ) {
-		echo "<tr>" ;
+		echo "<tr onclick='rowSelection(this)'  class='row_class'>" ;
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->id . "</td>";
@@ -239,5 +261,4 @@ case 3:
 	}
 }
 echo '</table>';
-
 }
