@@ -12,7 +12,8 @@ $a_array = array( 'init_page',
 'list_nick',
 'list_books',
 'continue_search' ,
-'delete_books'
+'delete_books',
+'delete_books_now'
 );
 ?>
 
@@ -44,6 +45,7 @@ $a_array = array( 'init_page',
 		$list_books = false;
                 $delete_books = false;
 		$continue_search = false;
+		$delete_books_now = false;
 		goto very_first;
 	}
 
@@ -58,6 +60,7 @@ $a_array = array( 'init_page',
 	$list_books = false;
 	$continue_search = false;
         $delete_books = false;
+	$delete_books_now = false;
 	$action = book_action($_POST);
 	//$t1 = $_SESSION['t1'];
 	if ($action == 0) {$init_page = true;}
@@ -69,6 +72,7 @@ $a_array = array( 'init_page',
 	if ($action == 6) {$list_books = true;}
 	if ($action == 7) {$continue_search = true;}
 	if ($action == 8) {$delete_books = true;}
+	if ($action == 9) {$delete_books_now = true;}
 	//print_r('action:'.$action);
 
 	if ($list_books) {
@@ -90,6 +94,18 @@ $a_array = array( 'init_page',
 		$nick  = $_POST['nick'];
 		$shelf = $_POST['bs_personal'];
 	}
+
+	if ($delete_books_now) {
+		$_SESSION['screen'] = '6';
+		$_SESSION['nick'] = $_POST['nick'];
+		$_SESSION['shelf'] = $_POST['bs_personal'];
+		$_SESSION['t1'] = $_POST['t1'];
+		$t1 = $_SESSION['t1'];
+		$shelf = $_POST['bs_personal'];
+		$nick  = $_POST['nick'];
+		$books_tobe_deleted = explode(',',$_POST['books_to_delete']);
+		bookdb_delete($books_tobe_deleted,$nick);
+		}
 
 
 	if ($db_update_google_search)
@@ -204,17 +220,31 @@ $(document).ready(function() {
   	document.theBookForm.bookshelf_survey.value = '2';
         $( "#theBookForm" ).submit();
     });
-    $( "#delete_button" ).click(function() {
-  	document.theBookForm.bookshelf_survey.value = '3';
-        $( "#theBookForm" ).submit();
-    });
+    $( "#delete_button" ).click(function(e) {
+        if ($("#table_of_books").length == 0) {
+  		document.theBookForm.bookshelf_survey.value = '3';
+        	$( "#theBookForm" ).submit();
+	} else {
+		var key_array = [];
+		$('input:checkbox:checked', '#table_of_books').each(function() {
+		var table = (document.getElementById('table_of_books'));
+    		var book_key = (table.rows[this.value].cells[2].innerHTML);
+		key_array.push(book_key);
+		});
+
+	  	document.theBookForm.books_to_delete.value = key_array;
+  		document.forms["theBookForm"].submit();
+	}
+
+	}
+    );
     $("#nick_in").on("input", function() {
   	document.theBookForm.nick.value = this.value;
     });
     $("#shelf_in").on("input", function() {
   	document.theBookForm.bs_personal.value = this.value;
     });
-		
+
 });
 function submitClick()
 {
@@ -233,6 +263,7 @@ function whichBook()
 }
 function clear_form()
 {
+  	document.theBookForm.books_to_delete.value = '';
   	document.theBookForm.bookselected.value = '6';
   	document.theBookForm.nick.value = '';
   	document.theBookForm.bs_personal.value = '';
@@ -295,6 +326,7 @@ function rowSelection(r,dbooks)
 	  <input style="width:100%;" type="text" name="t1" value="<?php echo $t1; ?>">
 	  <input type="hidden" name="bookshelf_survey" value="1">
 	  <input type="hidden" name="bookselected" value="6">
+	  <input type="hidden" name="books_to_delete" value="">
 	</div>	
 <!-- /title, author, isbn -->
 <!--** Left column = Search/Select, Clear, Help -->
@@ -445,6 +477,11 @@ if ($radio_buttons) {
 		$_SESSION['shelf'] = '';
 		$_SESSION['t1'] = '';
 	}
+        if ($delete_books_now) {
+            foreach ($books_tobe_deleted as $book_key) {
+
+            }
+        }
 
 ?>
      </div>

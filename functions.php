@@ -112,6 +112,7 @@ function book_action($postarray)
 	$list_books = 6;
 	$continue_search = 7;
         $delete_books = 8;
+        $delete_books_now = 9;
 
 	
 	if ($postarray['bookshelf_survey'] == '2')
@@ -122,6 +123,9 @@ function book_action($postarray)
 	{
 		return $delete_books;
         }
+	if ($postarray['books_to_delete'] != '' && $postarray['nick'] != '') {
+		return $delete_books_now;
+	}
 	if ($postarray['t1'] != '' && $postarray['bookselected'] != '6')
 	{
 		if ($postarray['t1'] == $_SESSION['t1']) {
@@ -183,6 +187,7 @@ else
 }
 $result = $wpdb->get_results( $query);
 echo "<p hidden id='sqlquery_num'>$q</p>";
+
 echo "<table id='table_of_books' border='2px' style='width:100%;'>";
 
 var_dump($q);
@@ -202,7 +207,6 @@ case 1:
         $k = 1;
 	foreach ($result as $row ) {
                 $row_nm =  "rlib". $k;
-                $k += 1; 
                         
                 if (!$dbooks){
 		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class'>" ;
@@ -215,9 +219,10 @@ case 1:
 			echo "<td>" . $row->id . "</td>";
 
                         if ($dbooks){
-                        echo "<td><input type='checkbox' name='$row_nm'   class='chk'></td>"; 
+                        echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
                         }
 		echo "</tr>";
+                $k += 1; 
             }
 	break;
 case 2:
@@ -229,15 +234,26 @@ case 2:
 	echo '    <th>Shelf</th>';
 	echo '    <th>Count</th>';
 	echo '  </tr>';
+	$row_nm = 0;
+        $k = 1;
 	foreach ($result as $row ) {
-		echo "<tr onclick='rowSelection(this)' class='row_class'>" ;
+                $row_nm =  "rlib". $k;
+                if (!$dbooks){
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class'>" ;
+                } else {
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class_delete'>" ;
+                }
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->id . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
 			echo "<td>" . $row->knt . "</td>";
+                        if ($dbooks){
+                        echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
+                        }
 		echo "</tr>";
+                $k += 1; 
 	}
 	break;
 case 3:
@@ -249,16 +265,42 @@ case 3:
 	echo '    <th>Shelf</th>';
 	echo '    <th>Count</th>';
 	echo '  </tr>';
+	$row_nm = 0;
+        $k = 1;
 	foreach ($result as $row ) {
-		echo "<tr onclick='rowSelection(this)'  class='row_class'>" ;
+                $row_nm =  "rlib". $k;
+                if (!$dbooks){
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class'>" ;
+                } else {
+		        echo "<tr onclick='rowSelection(this,$dbooks)' class='row_class_delete'>" ;
+                }
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->id . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
 			echo "<td>" . $row->knt . "</td>";
+                        if ($dbooks){
+                        echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
+                        }
 		echo "</tr>";
+                $k += 1; 
 	}
 }
 echo '</table>';
+}
+function bookdb_delete($books_tobe_deleted,$nick)
+{
+print_r('here within bookdb_delete');
+global $wpdb;
+foreach($books_tobe_deleted as $book_key) {
+        $q1 = "delete from wp_bookshelf_personal where book_id = '$book_key'";
+        $q2 = "update wp_bookshelf set knt = knt -1 where id = '$book_key' and knt > 0";
+        $result = $wpdb->get_results( $q1);
+        print_r('book_key:  '.$book_key);
+        print_r($result);
+        $result = $wpdb->get_results( $q2);
+        print_r('book_key:  '.$book_key);
+        print_r($result);
+	}
 }
