@@ -479,7 +479,9 @@ if ($radio_buttons) {
 	}
         if ($delete_books_now) {
             foreach ($books_tobe_deleted as $book_key) {
-
+                $bresult = bookdb_info($book_key);
+                $book_title = ($bresult[0])->title;
+	        echo "<p class='bookdeleted'>$book_title ... has been removed</p>";
             }
         }
 

@@ -291,16 +291,17 @@ echo '</table>';
 }
 function bookdb_delete($books_tobe_deleted,$nick)
 {
-print_r('here within bookdb_delete');
 global $wpdb;
 foreach($books_tobe_deleted as $book_key) {
         $q1 = "delete from wp_bookshelf_personal where book_id = '$book_key'";
         $q2 = "update wp_bookshelf set knt = knt -1 where id = '$book_key' and knt > 0";
         $result = $wpdb->get_results( $q1);
-        print_r('book_key:  '.$book_key);
-        print_r($result);
         $result = $wpdb->get_results( $q2);
-        print_r('book_key:  '.$book_key);
-        print_r($result);
 	}
+}
+function bookdb_info($key ) {
+        global $wpdb;
+        $q = "select * from wp_bookshelf where id = '$key' ";
+        $result = $wpdb->get_results( $q);
+        return $result;
 }
