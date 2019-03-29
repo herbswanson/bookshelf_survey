@@ -1,0 +1,50 @@
+<p>This tool allows a person to recommend a book to the Saker BookShelf. In
+addition it allows an individual to maintain their own library of books and
+sub divided by bookshelfs if desired. Google books api is used to finds and
+obtain book info. Google has quotas so at times this tools may fail to work if
+we exceed our daily quota. </p>
+
+<p>The Saker database will contain all books recommended by our readers and will
+be used to help select the top  50 books.</p>
+
+<h3>Look up Book and Enter book in database</h3>
+<p>1. Enter either title,author or isnb number</p>
+<p>2. press 'Search for Book'</p>
+<p>3. Using radio buttons (Below Clear button) to select one of 5 book returned.</p>
+<p>4. Then 'Press here to Select Book' to enter into Saker database.</p>
+<p>5. If none of the books match re-enter search term (step 1) and search again</p>
+<p>(step 2) </p>
+<p>6. Press the 'Clear' to return to beginning</p>
+
+<h3>View top 50 books entered in Saker Database</h3>
+<p>1. Press 'Clear' to return to start</p>
+<p>2. Press 'View Library'</p>
+<p>3. Top 50 books will be displayed (number of readers recommending "count")</p>
+<p>4  Press 'Clear' to return to start</p>
+
+<h3>View a non top 50 book in Saker database</h3>
+<p>1. Press 'Clear' to return to start</p>
+<p>2. Enter in title,author,isbn entry area</p>
+<p>3. Press view Library </p>
+<p>4. all matchin books in Saker database will be returned</p>
+<p>5  Press 'Clear' to return to start</p>
+
+<h3>Enter books in your Library/BookShelf</h3>
+<p>A library can be subdivided by entering a 'Bookshelf Name'</p>
+<p>1. Press 'Clear' to return to start</p>
+<p>2. Enter in title,author,isbn entry area</p>
+<p>3. Enter your library name in 'My Library' </p>
+<p>4. Press 'Search for Book</p>
+<p>5. Select book using radio buttons</p>
+<p>6. Then 'Press here to Select Book' to enter into database.</p>
+<p>7. if a 2nd book is to be added</p>
+<p>      a. Enter in another book in title,author, isbn </p>
+<p>      b. repeat steps 4-6</p>
+<p>8. Press 'Clear' to return to start</p>
+
+<h3>Delete books from your Library</h3></p>
+<p>1. Enter in your library name 'My Library'</p>
+<p>2. Press the 'Delete Book' key</p>
+<p>3. select the books to delete by clicking on checkbox on far right of book</p>
+<p>4. Press 'Delete Book'</p>
+<p>5. Press 'Clear' to return to start</p>

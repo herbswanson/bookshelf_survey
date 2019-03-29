@@ -13,7 +13,9 @@ $a_array = array( 'init_page',
 'list_books',
 'continue_search' ,
 'delete_books',
-'delete_books_now'
+'delete_books_now' ,
+'help_page',
+'back_to_view_lib'
 );
 ?>
 
@@ -46,6 +48,8 @@ $a_array = array( 'init_page',
                 $delete_books = false;
 		$continue_search = false;
 		$delete_books_now = false;
+                $help_page = false;
+                $back_to_view_lib= false;
 		goto very_first;
 	}
 
@@ -61,6 +65,8 @@ $a_array = array( 'init_page',
 	$continue_search = false;
         $delete_books = false;
 	$delete_books_now = false;
+        $help_page = false;
+        $back_to_view_lib= false;
 	$action = book_action($_POST);
 	//$t1 = $_SESSION['t1'];
 	if ($action == 0) {$init_page = true;}
@@ -73,8 +79,16 @@ $a_array = array( 'init_page',
 	if ($action == 7) {$continue_search = true;}
 	if ($action == 8) {$delete_books = true;}
 	if ($action == 9) {$delete_books_now = true;}
+	if ($action == 10) {$help_page = true;}
+	if ($action == 11) {$back_to_view_lib = true;}
+
 	//print_r('action:'.$action);
 
+        if ($help_page){
+                $t1 = '';
+                $nick = '';
+                $shelf = '';
+        }
 	if ($list_books) {
 		$_SESSION['screen'] = '6';
 		$_SESSION['nick'] = $_POST['nick'];
@@ -84,6 +98,10 @@ $a_array = array( 'init_page',
 		$nick  = $_POST['nick'];
 		$shelf = $_POST['bs_personal'];
 	}
+
+        if ($back_to_view_lib){
+           // $google_search = true;
+        }
 
 	if ($delete_books) {
 		$_SESSION['screen'] = '6';
@@ -135,7 +153,7 @@ $a_array = array( 'init_page',
 		$rtn = bookdb_update($the_selected_book,$nick,$shelf);
 		$radio_buttons = true;
 	}
-	if ($google_search)
+	if ($google_search || $back_to_view_lib)
 	{
 		//print_r($_POST);
 		$_SESSION['screen'] = '2';
@@ -146,6 +164,7 @@ $a_array = array( 'init_page',
 		$shelf = $_SESSION['shelf'];
 		$t1 = $_SESSION['t1'];
 		$radio_buttons = true;
+                //if ($back_to_view_lib) {$radio_buttons = false;}
 		$param_val = $_POST['t1'];
 		$bookinfo = get_bookinfo($param_val);
 		$_SESSION['thebooks'] = $bookinfo;
@@ -154,6 +173,7 @@ $a_array = array( 'init_page',
 			$booktitles[$k] = $book[0];
 			$k += 1;
 		}
+                $t1 = '';
 	}
 	if ($db_update)
 	{
@@ -200,8 +220,9 @@ $a_array = array( 'init_page',
 	}
 
 very_first:
-$tmp = $_SESSION['screen'];
-$log_msg = $log_msg . '  screen:'. $a_array[$tmp] . ' action: ' . $a_array[$action]; 
+//$tmp = $_SESSION['screen'];
+$log_msg = $log_msg .  ' action: ' . $a_array[$action]; 
+//$log_msg = $log_msg . '  screen:'. $a_array[$tmp] . ' action: ' . $a_array[$action]; 
 file_put_contents('/var/www/html/wp-content/themes/yaaburnee-themes-child/new_bookshelf_survey.log',$log_msg . "\n",FILE_APPEND);
 ?>
 <?php //  get_header(); ?>
@@ -238,6 +259,13 @@ $(document).ready(function() {
 
 	}
     );
+    $( "#help_button" ).click(function(e) {
+            document.theBookForm.bookshelf_survey.value = '4';
+            clear_form();
+            // the submit form is done in clear_form
+	}
+    );
+
     $("#nick_in").on("input", function() {
   	document.theBookForm.nick.value = this.value;
     });
@@ -301,6 +329,7 @@ function rowSelection(r,dbooks)
     var table = (document.getElementById('table_of_books'));
     var book_key = (table.rows[r.rowIndex].cells[cidx].innerHTML);
     if (!dbooks){
+  	document.theBookForm.bookshelf_survey.value = '5';
         document.theBookForm.t1.value = book_key;
         document.forms["theBookForm"].submit();
     }
@@ -366,7 +395,7 @@ function rowSelection(r,dbooks)
 <!--** Right column = My Library Name , Bookshelf name-->
 	<div id="rightcol">
 		<h3>Add book to Favorites</h3>
-		  <?php if ($action <= '1' || $action == 6)
+		  <?php if ($action <= '1' )
 		  {
 			echo '<div>';
 				echo '<label style="font-size:16px; font-weight:800; " for="">My Library (Name)</label>';
@@ -391,13 +420,13 @@ function rowSelection(r,dbooks)
 		 ?>
 
 		  <div id="help_id">
-			<button  onclick="help_instructions()" id="help_button">Help</button>
+			<button  id="help_button">Help</button>
 		  </div>
 	</div>
 <!-- /right column --> 
 </form>
 <?php
-if ($radio_buttons) {
+if ($radio_buttons && !$back_to_view_lib) {
 echo "<div class='radios'  >";
 echo  "<input type='radio'   name='chooseone' value='1' id='r1'><label class='radiosel' for='r1'>  $booktitles[0]</label><br>";
 echo  "<input type='radio'   name='chooseone' value='2' id='r2'><label class='radiosel' for='r2'>  $booktitles[1]</label><br>";
@@ -459,14 +488,14 @@ if ($radio_buttons) {
 		echo "</div>";  // google_results end
 	}
 	
-	if ($list_books) {
+	if ($list_books ) {
 		$nick = trim($_SESSION['nick']);
 		$shelf = trim($_SESSION['shelf']);
                 $dbooks = false;
 		build_booklists($t1,$nick,$shelf,$dbooks);
-		$_SESSION['nick'] = '';
-		$_SESSION['shelf'] = '';
-		$_SESSION['t1'] = '';
+//		$_SESSION['nick'] = '';
+//		$_SESSION['shelf'] = '';
+//		$_SESSION['t1'] = '';
         }
         if ($delete_books) {
                 $dbooks = true; 
@@ -484,6 +513,10 @@ if ($radio_buttons) {
 	        echo "<p class='bookdeleted'>$book_title ... has been removed</p>";
             }
         }
+        if ($help_page) {
+                readfile(ABSPATH . "/wp-content/themes/yaaburnee-themes-child/bookshelf_help.html");
+        }
+
 
 ?>
      </div>
