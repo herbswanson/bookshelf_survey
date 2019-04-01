@@ -26,7 +26,7 @@ be used to help select the top  50 books.</p>
 <p>1. Press 'Clear' to return to start</p>
 <p>2. Enter in title,author,isbn entry area</p>
 <p>3. Press view Library </p>
-<p>4. all matchin books in Saker database will be returned</p>
+<p>4. all matching books in Saker database will be returned</p>
 <p>5  Press 'Clear' to return to start</p>
 
 <h3>Enter books in your Library/BookShelf</h3>

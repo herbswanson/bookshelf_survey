@@ -46,6 +46,7 @@ function get_bookinfo ($btitle)
     $knt = 0;
     foreach ($results as $item) {
 	$knt += 1;
+        $googleID = $item['id'];
     	$title = $item['volumeInfo']['title'];
     	$subtitle = $item['volumeInfo']['subtitle'];
     	$authors = $item['volumeInfo']['authors'][0];
@@ -56,7 +57,7 @@ function get_bookinfo ($btitle)
   		$vid = $item['volumeInfo']['industryIdentifiers'][0]->{'identifier'};
 		$volid = $type.">  ".$vid;
 	}
-        $book_item=array($title,$subtitle,$authors,$description,$volid);
+        $book_item=array($title,$subtitle,$authors,$description,$volid,$googleID);
 	$books[]=$book_item;
 	if ($knt == 5) { break;}
 	}
@@ -69,6 +70,7 @@ function bookdb_update($bookinfo,$nick,$shelf)
     if (count($bookinfo) == 0) {return 0;}
     if ($bookinfo[4] == 'No ISBN/Identifier') {return 0;}
     $ixarr = explode(">",$bookinfo[4]);
+    $googleid=$bookinfo[5];
     $id = trim($ixarr[1]);
     $id_type = trim($ixarr[0]);
     $title = $bookinfo[0];
@@ -78,13 +80,13 @@ function bookdb_update($bookinfo,$nick,$shelf)
     $rtn = $wpdb->query($wpdb->prepare(
 	    "
 		insert into $table_name
-		(id,id_type,knt,title,subtitle,author,review)
-		values (%s,%s,%d,%s,%s,%s,%s) 
+		(bookid,id_type,knt,title,subtitle,author,review,googleid)
+		values (%s,%s,%d,%s,%s,%s,%s,%s) 
 		on duplicate key update knt = knt + 1
 	     "
 	       ,
-	     $id,$id_type,1,$title,$subtitle,$author,$review)) ;
-    print_r('bookshelf:'.$shelf);
+	     $id,$id_type,1,$title,$subtitle,$author,$review,$googleid)) ;
+    print_r('bookshelf_rtn:'.$rtn);
     if ($rtn === false) { return $rtn; } // sql update failed
     if ($nick == '' || $nick == null) { return $rtn ; }
     $nick = trim($nick);
@@ -93,7 +95,7 @@ function bookdb_update($bookinfo,$nick,$shelf)
     $rtn = $wpdb->query($wpdb->prepare(
 	    "
 		insert ignore into $table_name
-		(nick_id,book_id,shelf_name)
+		(nick_id,bookid,shelf_name)
 		values (%s,%s,%s)
 	    "
 	     ,
@@ -113,6 +115,8 @@ function book_action($postarray)
 	$continue_search = 7;
         $delete_books = 8;
         $delete_books_now = 9;
+        $help_page = 10;
+        $back_to_view_lib = 11;
 
 	
 	if ($postarray['bookshelf_survey'] == '2')
@@ -122,6 +126,15 @@ function book_action($postarray)
 	if ($postarray['bookshelf_survey'] == '3')
 	{
 		return $delete_books;
+        }
+	if ($postarray['bookshelf_survey'] == '4')
+	{
+		return $help_page;
+        }
+	if ($postarray['bookshelf_survey'] == '5')
+	{
+		return $back_to_view_lib;
+	//	return $google_search;
         }
 	if ($postarray['books_to_delete'] != '' && $postarray['nick'] != '') {
 		return $delete_books_now;
@@ -168,22 +181,22 @@ global $wpdb;
 if ($t1 == '' && $nick == null )
 {
 	$q = 1;
-	$query =  "SELECT knt,title,id,author  FROM wp_bookshelf  order by knt desc, title limit 50";
+	$query =  "SELECT knt,title,bookid,author,googleid  FROM wp_bookshelf  order by knt desc, title limit 50";
 }
 elseif ( $t1 != null)
 {
 	$q = 1;
-	$query =  "SELECT knt,title,id,author  FROM wp_bookshelf  where (title like '%$t1%' or author like '%$t1%' or id = '$t1')  order by knt desc, title limit 50 ";
+	$query =  "SELECT knt,title,bookid,author,googleid  FROM wp_bookshelf  where (title like '%$t1%' or author like '%$t1%' or bookid = '$t1')  order by knt desc, title limit 50 ";
 }
 elseif ( $nick != null && $shelf == null)
 {
 	$q = 2;
-	$query = "select a.title,a.author,a.id,b.nick_id,b.shelf_name,a.knt from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.id=b.book_id where b.nick_id = '$nick' order by  title";
+	$query = "select a.title,a.author,a.bookid,b.nick_id,b.shelf_name,a.knt,a.googleid from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.bookid where b.nick_id = '$nick' order by  title";
 } 
 else
 {
 	$q = 3;
-	$query = "select a.title,a.author,a.id,b.nick_id,b.shelf_name, a.knt from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.id=b.book_id where b.nick_id = '$nick' and b.shelf_name = '$shelf' order by  shelf_name,title";
+	$query = "select a.title,a.author,a.bookid,b.nick_id,b.shelf_name, a.knt,a.googleid  from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.bookid where b.nick_id = '$nick' and b.shelf_name = '$shelf' order by  shelf_name,title";
 }
 $result = $wpdb->get_results( $query);
 echo "<p hidden id='sqlquery_num'>$q</p>";
@@ -216,7 +229,7 @@ case 1:
 			echo "<td>" . $row->knt . "</td>";
 			echo "<td> " . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
-			echo "<td>" . $row->id . "</td>";
+			echo "<td>" . $row->bookid . "</td>";
 
                         if ($dbooks){
                         echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
@@ -245,7 +258,7 @@ case 2:
                 }
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
-			echo "<td>" . $row->id . "</td>";
+			echo "<td>" . $row->bookid . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
 			echo "<td>" . $row->knt . "</td>";
@@ -276,7 +289,7 @@ case 3:
                 }
 			echo "<td>" . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
-			echo "<td>" . $row->id . "</td>";
+			echo "<td>" . $row->bookid . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
 			echo "<td>" . $row->knt . "</td>";
@@ -293,15 +306,20 @@ function bookdb_delete($books_tobe_deleted,$nick)
 {
 global $wpdb;
 foreach($books_tobe_deleted as $book_key) {
-        $q1 = "delete from wp_bookshelf_personal where book_id = '$book_key'";
-        $q2 = "update wp_bookshelf set knt = knt -1 where id = '$book_key' and knt > 0";
+        $q1 = "delete from wp_bookshelf_personal where bookid = '$book_key'";
+        $q2 = "update wp_bookshelf set knt = knt -1 where bookid = '$book_key' and knt > 0";
         $result = $wpdb->get_results( $q1);
         $result = $wpdb->get_results( $q2);
 	}
 }
 function bookdb_info($key ) {
         global $wpdb;
-        $q = "select * from wp_bookshelf where id = '$key' ";
+        $q = "select * from wp_bookshelf where bookid = '$key' ";
         $result = $wpdb->get_results( $q);
         return $result;
+}
+function clear_session($postarray,$sessionarray){
+        $postarray = [];  
+        $sessionarray = [];
+        return;
 }

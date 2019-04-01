@@ -164,7 +164,6 @@ $a_array = array( 'init_page',
 		$shelf = $_SESSION['shelf'];
 		$t1 = $_SESSION['t1'];
 		$radio_buttons = true;
-                //if ($back_to_view_lib) {$radio_buttons = false;}
 		$param_val = $_POST['t1'];
 		$bookinfo = get_bookinfo($param_val);
 		$_SESSION['thebooks'] = $bookinfo;
@@ -279,10 +278,6 @@ function submitClick()
 	/***
 	****/
 }
-function nickfill()
-{
-	alert('hello world from nickfill');
-}
 function whichBook()
 {
   	book_sel = document.querySelector('input[name="chooseone"]:checked').value;
@@ -298,13 +293,7 @@ function clear_form()
   	document.theBookForm.t1.value = '';
   	document.forms["theBookForm"].submit();
 }
-function help_instructions() {
-	alert("help button pressed");
-}
-function delete_book()
-{
-	alert("Delete Button pressed");
-}
+
 function view_lib()
 {
     /* future code goes here */
@@ -493,9 +482,6 @@ if ($radio_buttons) {
 		$shelf = trim($_SESSION['shelf']);
                 $dbooks = false;
 		build_booklists($t1,$nick,$shelf,$dbooks);
-//		$_SESSION['nick'] = '';
-//		$_SESSION['shelf'] = '';
-//		$_SESSION['t1'] = '';
         }
         if ($delete_books) {
                 $dbooks = true; 
