@@ -1,0 +1,243 @@
+<style>  
+body {
+  background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/123941/bg-sky.png);
+  background-repeat: repeat;
+ 
+}
+
+ul.rel-results {
+  list-style-type: circle;
+}
+
+.nojs {
+  padding: 2px;
+  padding-left: 6px;
+  margin-bottom: 5px;
+  background: #ff0000;
+  color: #ffffff;
+  font-size: 15px;
+  border: 1px solid #ff0000;
+  border-radius: 5px;
+}
+
+.outerdiv {
+  margin-top: 60px;
+}
+
+.span-style {
+  font-size: 17px;
+}
+
+.search-bar {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 25px;
+}
+
+.bar-style {
+  background: #337AB7;
+  color: rgb(250, 250, 250);
+}
+
+.related-results {
+  -moz-animation-delay: 1.5s;
+  -webkit-animation-delay: 1.5s;
+}
+
+.movie-poster {
+  float: left;
+  width: 150px;
+  margin-right: 10px;
+  -moz-animation-delay: 1s;
+  -webkit-animation-delay: 1s;
+}
+
+.span-outer {
+  font-size: 20px;
+}
+
+.outer-p {
+  margin-top: 10px;
+}
+
+.inner-p {
+  margin: 2px;
+}
+
+.outer-p-2 {
+  margin-top: 5px;
+}
+
+.outer-p-3 {
+  margin-top: 15px;
+}
+
+.divider {
+  margin: 0 8px 0 8px;
+}
+
+.divider:before {
+  content: "|";
+}
+
+@media (max-width: 300px) {
+  .related-results {
+    display: none;
+  }
+}
+
+.bottomLine {
+  border-bottom: 1px solid #1E90FF;
+  margin: 0 88px 0 88px;
+}
+
+
+
+/* css for AppCtrl*/
+.dialogdemoBasicUsage {
+  margin: 10px;
+}
+
+.dp{
+    height: 200px;
+    width: 200px;
+    float: left;
+    border-radius: 3pt;
+
+}
+.top{
+    float: left;
+    width: 100%;
+    color: black;
+    margin-left: 10px;
+    font-size: 13pt;
+}
+.top p, h2 { 
+    margin-left: 250px;
+}
+
+.modal-body{
+    width: 32%;
+    float: left;
+}
+
+#modalBody p{
+  font-size: 11pt;
+  color: black;
+}
+
+#modalBody {
+  color: #0066CC;
+}
+
+
+</style>
+<div ng-app="MyApp">
+  <div class="container-fluid outerdiv" ng-controller="bookCtrl">
+      <!--
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#"><b>Google Books</b> <span class="span-style">library</span></a> 
+      </div>
+    </div>
+  </nav>
+      -->
+
+  <noscript>
+    <div class="nojs">Javascript is either disabled or not supported in your browser. Please enable it or use a Javascript enabled browser.</div>
+  </noscript>
+
+  <div class="animated zoomInRight">
+    <div class="input-group search-bar">
+      <input type="hidden" ng-model="search" ng-model-options="{ debounce: 800 }" onclick="select()" class="form-control" placeholder="Enter book title" autofocus />
+      <span class="input-group-addon bar-style"><i class="glyphicon glyphicon-search"></i></span>
+    </div>
+      <div >
+    <div id="main-info" class="col-sm-8">
+        <img ng-src="{{bookInfo.imageLinks.smallThumbnail}}" class="thumbnail animated flip movie-poster">
+
+        <span class="span-outer">
+          <a href="https://books.google.com/{{ bookInfo.previewLink }}" target="_blank">{{bookInfo.title}}</a>
+        </span>, {{bookInfo.Year}}
+
+        <p><strong>Publisher:</strong> {{bookInfo.publisher}}
+      <br>
+          <strong>Published Date:</strong> {{bookInfo.publishedDate}}
+      </p>
+
+        <p>{{bookInfo.description}}</p>
+
+        <p class="outer-p">
+          <div class="inner-p">
+            <span class="label label-primary" >Authors :</span> 
+            <span ng-repeat="author in bookInfo.authors">{{author}}, </span>
+          </div>
+          <div class="inner-p">
+            <span class="label label-primary">Categories :</span>
+            <span ng-repeat="categories in bookInfo.categories">{{categories}}
+          </div> 
+        </p>
+  
+  <div class=" col-md-4 outer-p-2"><strong>Ratings:</strong>
+          <br>
+          Average Rating: <span class="label label-success">{{bookInfo.averageRating}}</span>
+          <br>
+          Ratings Count: <span class="label label-success">{{bookInfo.ratingsCount}}</span>
+          <br>
+          Maturity Rating: <span class="label label-success">{{bookInfo.maturityRating.split('_').join(' ')}}</span>
+        </p>
+    
+    </div>
+  <div class=" col-md-3 outer-p-2"><strong>Sale Info:</strong>
+          <br>
+          Country: <span class="label label-success">{{saleInfo.country}}</span>
+          <br>
+          Sale Ability: <span class="label label-success">{{ saleInfo.saleability.split('_').join(' ')}}</span>
+          <br>
+          List Price: <span class="label label-success">{{ saleInfo.listPrice.amount}} {{saleInfo.listPrice.currencyCode | lowercase}}</span>
+          <br>
+          Retail Price: <span class="label label-success">{{ saleInfo.listPrice.amount}} {{saleInfo.retailPrice.currencyCode | lowercase}}</span>
+        </p>
+      </div>
+      <div class=" col-md-5 outer-p-2">
+        <br><br><br>
+          <md-button class="md-raised md-warn" href="{{ bookInfo.previewLink }}" target="_blank"><strong>Download .pdf</strong></md-button>
+        
+          <md-button class="md-raised md-warn" href="{{ bookInfo.previewLink }}" target="_blank"><strong>Buy this book!</strong></md-button>
+       </div>
+      </div>
+    
+
+      <div ng-if="bookInfo.res==='False'">
+        No results found.
+      </div>
+     
+    
+
+    <div id="related-results" class=" animated bounce related-results">
+        Related Results:
+        <hr>
+
+        <ul class="rel-results">
+          <li ng-repeat="book in relatedBooks | orderBy:'volumeInfo.title'">
+            <a href="#" id="{{ $index + 1 }}" ng-click="update(book)">{{book.volumeInfo.title }}</a>,
+          </li>
+        </ul>
+    </div>
+   </div>
+  <div ng-if="!bookInfo">
+      Failed to load resource: the server responded with a status of 403 (Forbidden)
+        <br><br><br>
+      </div>
+ </div> 
+</div> <!-- end of bookCtrl -->
+
+<!-- start of AppCtrl -->
+<div class="bottomLine animated zoomInRight">
+</div>
+</div>
+
+</div>
+
+</div>

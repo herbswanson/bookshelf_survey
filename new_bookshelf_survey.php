@@ -1,5 +1,6 @@
 <?php /* Template Name: BookShelf_Survey */ ?>
 <?php
+//header("Content-Type: application/javascript charset=utf-8");
 session_start();
 $bookinfo = [];
 $booktitles = array('','','','','');
@@ -20,6 +21,7 @@ $a_array = array( 'init_page',
 ?>
 
 <?php
+        var_dump($_POST['bs_personal']);
 	if (!isset($_SESSION['screen'])) {
 		$_SESSION['screen'] = 0;
 	}
@@ -100,6 +102,13 @@ $a_array = array( 'init_page',
 	}
 
         if ($back_to_view_lib){
+		$_SESSION['screen'] = '6';
+		$_SESSION['nick'] = $_POST['nick'];
+		$_SESSION['shelf'] = $_POST['bs_personal'];
+		$_SESSION['t1'] = $_POST['t1'];
+		$t1 = $_SESSION['t1'];
+		$nick  = $_POST['nick'];
+		$shelf = $_POST['bs_personal'];
            // $google_search = true;
         }
 
@@ -153,7 +162,8 @@ $a_array = array( 'init_page',
 		$rtn = bookdb_update($the_selected_book,$nick,$shelf);
 		$radio_buttons = true;
 	}
-	if ($google_search || $back_to_view_lib)
+	//if ($google_search || $back_to_view_lib)
+	if ($google_search)
 	{
 		//print_r($_POST);
 		$_SESSION['screen'] = '2';
@@ -164,6 +174,7 @@ $a_array = array( 'init_page',
 		$shelf = $_SESSION['shelf'];
 		$t1 = $_SESSION['t1'];
 		$radio_buttons = true;
+                /*******
 		$param_val = $_POST['t1'];
 		$bookinfo = get_bookinfo($param_val);
 		$_SESSION['thebooks'] = $bookinfo;
@@ -173,21 +184,17 @@ $a_array = array( 'init_page',
 			$k += 1;
 		}
                 $t1 = '';
+                **********/
 	}
 	if ($db_update)
 	{
-		$b_idx = (int)$_POST['bookselected']; 
-		$b_idx -= 1;
 		$_SESSION['screen'] = '3';
 		$nick = $_SESSION['nick'];
 		$shelf = $_SESSION['shelf'] ;
 		$t1= $_SESSION['t1'] ;
-		$len = count($_SESSION['thebooks']);
-		if (($b_idx+1) <= $len)
-		{  
-			$the_selected_book = ($_SESSION['thebooks'][$b_idx]);
-			$rtn = bookdb_update($the_selected_book,$nick,$shelf);
-		}
+                $the_selected_book = $_POST['google_book_id'];
+		$rtn = bookdb_update($the_selected_book,$nick,$shelf);
+                if ($rtn) {$book_added = true;}
 		$_SESSION['t1'] = '';
 		$t1 = '';
 	}
@@ -224,10 +231,17 @@ $log_msg = $log_msg .  ' action: ' . $a_array[$action];
 //$log_msg = $log_msg . '  screen:'. $a_array[$tmp] . ' action: ' . $a_array[$action]; 
 file_put_contents('/var/www/html/wp-content/themes/yaaburnee-themes-child/new_bookshelf_survey.log',$log_msg . "\n",FILE_APPEND);
 ?>
-<?php //  get_header(); ?>
+<?php//   get_header(); ?>
 <!DOCTYPE html>
 
 <head>
+<meta  content="HTML,CSS,XML,JavaScript" charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+<link rel='stylesheet' href='https://material.angularjs.org/1.1.4/docs.css'>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+
+
 <h1 class="header">Saker BookShelf</h1>
 <style>
 <?php include 'new_bookshelf_survey.css'; ?> 
@@ -280,13 +294,16 @@ function submitClick()
 }
 function whichBook()
 {
-  	book_sel = document.querySelector('input[name="chooseone"]:checked').value;
-  	document.theBookForm.bookselected.value = book_sel;
+//  	book_sel = document.querySelector('input[name="chooseone"]:checked').value;
+//  	document.theBookForm.bookselected.value = book_sel;
+//  	alert(document.theBookForm.bookselected.value);
+        document.theBookForm.bookshelf_survey.value = '6';
   	document.forms["theBookForm"].submit();
 }
 function clear_form()
 {
   	document.theBookForm.books_to_delete.value = '';
+        document.theBookForm.bookshelf_survey.value = '1';
   	document.theBookForm.bookselected.value = '6';
   	document.theBookForm.nick.value = '';
   	document.theBookForm.bs_personal.value = '';
@@ -304,22 +321,26 @@ function rowSelection(r,dbooks)
     var qnum  = (document.getElementById('sqlquery_num').innerHTML);
     switch (qnum){
         case '1':
-            cidx = 3
+            cidx1 = 4
+            cidx2 = 1
             break;
         case  '2':
-            cidx = 2;
+            cidx1 = 5;
+            cidx2 = 0
             break;
         case  '3':
-            cidx = 2;
+            cidx1 = 5;
+            cidx2 = 0
             break;
         default:
             console.log('Unknown query string from rowSelection function');
     }
     var table = (document.getElementById('table_of_books'));
-    var book_key = (table.rows[r.rowIndex].cells[cidx].innerHTML);
+    var book_key = (table.rows[r.rowIndex].cells[cidx1].innerHTML);
     if (!dbooks){
   	document.theBookForm.bookshelf_survey.value = '5';
-        document.theBookForm.t1.value = book_key;
+        document.theBookForm.google_book_id.value = book_key;
+        document.theBookForm.t1.value = (table.rows[r.rowIndex].cells[cidx2].innerHTML);
         document.forms["theBookForm"].submit();
     }
 }
@@ -345,6 +366,7 @@ function rowSelection(r,dbooks)
 	  <input type="hidden" name="bookshelf_survey" value="1">
 	  <input type="hidden" name="bookselected" value="6">
 	  <input type="hidden" name="books_to_delete" value="">
+	  <input type="hidden" name="google_book_id" value="">
 	</div>	
 <!-- /title, author, isbn -->
 <!--** Left column = Search/Select, Clear, Help -->
@@ -415,6 +437,7 @@ function rowSelection(r,dbooks)
 <!-- /right column --> 
 </form>
 <?php
+/********
 if ($radio_buttons && !$back_to_view_lib) {
 echo "<div class='radios'  >";
 echo  "<input type='radio'   name='chooseone' value='1' id='r1'><label class='radiosel' for='r1'>  $booktitles[0]</label><br>";
@@ -425,22 +448,23 @@ echo  "<input type='radio'   name='chooseone' value='5' id='r5'><label class='ra
 echo  "<input type='radio'   name='chooseone' value='6' id='r6' checked='checked' ><label class='radiosel' for='r6'> none of the above </label><br>";
 }
 echo "</div>";
-?>
-<?php
-if ($db_update or $db_update_google_search) 
-{
-echo "<div>";
-if (isset($the_selected_book[0]))
-{	
-	echo "<p class='bookaccepted'> $the_selected_book[0] ... has been entered</p>";
-}
-echo "</div>";
-}
+***********/
 ?>
      </div>
      </div>  <!-- end of wrapper -->
+<?php
+if ($db_update or $db_update_google_search) 
+{
+if ($book_added)
+{	
+        $out_paragraph = "<p class='bookaccepted' align='center'> " . $_POST['t1'] . " ... has been entered</p>";
+	echo $out_paragraph;
+}
+}
+?>
      <div class='wrapper-2'>
 <?php
+/****************
 if ($radio_buttons) {
 		echo "<div class='google_icon'>";
 			echo  "<img style='display:block; margin-left:100px;' src='/wp-content/uploads/2019/03/google_search1-e1552834186185.png'>";
@@ -476,7 +500,7 @@ if ($radio_buttons) {
 		}
 		echo "</div>";  // google_results end
 	}
-	
+        ***************/	
 	if ($list_books ) {
 		$nick = trim($_SESSION['nick']);
 		$shelf = trim($_SESSION['shelf']);
@@ -502,11 +526,87 @@ if ($radio_buttons) {
         if ($help_page) {
                 readfile(ABSPATH . "/wp-content/themes/yaaburnee-themes-child/bookshelf_help.html");
         }
+        if ($back_to_view_lib || $radio_buttons) {
+                readfile(ABSPATH . "/wp-content/themes/yaaburnee-themes-child/bookshelf_book.html");
+        }
+
 
 
 ?>
      </div>
   </div>
 </div>
+
+  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js'></script>
+<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
+<script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.4/angular-material.js'></script>
+  
+<script>
+angular.module('MyApp',['ngMaterial', 'ngMessages', 'material.svgAssetsCache'])
+
+.controller("bookCtrl",function($scope,$http) {
+    $scope.$watch('search', function() {
+    fetch();
+    });
+    if (document.theBookForm.google_book_id.value != '') {
+        $scope.search = document.theBookForm.google_book_id.value;
+    } else {
+        $scope.search = document.theBookForm.t1.value;
+    }
+    // $scope.search = "harry potter";
+
+    function fetch() {
+    $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.search).then(function(res) {
+  		console.log(res.data);
+
+      document.theBookForm.google_book_id.value = res.data.items[0]['id'];
+      //          alert(document.theBookForm.bookselected.value);
+      $scope.relatedBooks = res.data.items;
+      $scope.bookInfo = res.data.items[0].volumeInfo;
+      $scope.saleInfo = res.data.items[0].saleInfo;
+      $scope.related = res.data;
+    });
+       
+      
+  }
+    $scope.update = function(book) {
+      $scope.search = book.volumeInfo.title;
+      document.theBookForm.t1.value = $scope.search;
+    };
+	})
+
+
+//AppCtrl
+.controller('AppCtrl', function($scope, $mdDialog) {
+  $scope.status = '  ';
+  $scope.customFullscreen = false;
+  $scope.showTabDialog = function(ev) {
+    $mdDialog.show({
+      controller: DialogController,
+      templateUrl: 'tabDialog.tmpl.html',
+      parent: angular.element(document.body),
+      targetEvent: ev,
+      clickOutsideToClose:true
+    })   
+  };
+  function DialogController($scope, $mdDialog) {
+    $scope.hide = function() {
+      $mdDialog.hide();
+    };
+
+    $scope.cancel = function() {
+      $mdDialog.cancel();
+    };
+
+    $scope.answer = function(answer) {
+      $mdDialog.hide(answer);
+    };
+  }
+});
+</script>
 </body>
 </html>

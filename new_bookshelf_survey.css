@@ -205,6 +205,9 @@ body
 .bookaccepted {
 	font-size:20px;
 	font-weight:800;
+        color:blue;
+        height:100px;
+        padding:20px;
 	position: relative;
 }
 .bookaccept {
@@ -278,4 +281,7 @@ box-shadow: 0px 0px 1px 7px #cccccc;
 .chk{
     width: 20px;
     height: 20px;
+}
+.hideANDseek {
+      display: none;
 }

@@ -51,32 +51,39 @@ function get_bookinfo ($btitle)
     	$subtitle = $item['volumeInfo']['subtitle'];
     	$authors = $item['volumeInfo']['authors'][0];
     	$description = $item['volumeInfo']['description'];
+        $volimg = $item['volumeInfo']['imageLinks']['thumbnail'];
 	$volid = "No ISBN/Identifier";
 	if (isset($item['volumeInfo']['industryIdentifiers'][0]->{'type'})) {
   		$type =  $item['volumeInfo']['industryIdentifiers'][0]->{'type'};
   		$vid = $item['volumeInfo']['industryIdentifiers'][0]->{'identifier'};
 		$volid = $type.">  ".$vid;
 	}
-        $book_item=array($title,$subtitle,$authors,$description,$volid,$googleID);
+        $book_item=array($title,$subtitle,$authors,$description,$volid,$googleID,$volimg);
 	$books[]=$book_item;
 	if ($knt == 5) { break;}
 	}
     return $books;
 }
-function bookdb_update($bookinfo,$nick,$shelf)
+function bookdb_update($book_id,$nick,$shelf)
 {
     global $wpdb;
+    $url= 'https://www.googleapis.com/books/v1/volumes/' . $book_id;
+    $json= file_get_contents($url);
+    $bookinfo = json_decode($json);
+
     $table_name = $wpdb->prefix.'bookshelf';
-    if (count($bookinfo) == 0) {return 0;}
-    if ($bookinfo[4] == 'No ISBN/Identifier') {return 0;}
-    $ixarr = explode(">",$bookinfo[4]);
-    $googleid=$bookinfo[5];
-    $id = trim($ixarr[1]);
-    $id_type = trim($ixarr[0]);
-    $title = $bookinfo[0];
-    $subtitle = $bookinfo[1];
-    $author = $bookinfo[2];
-    $review = $bookinfo[3];
+    $googleid=$book_id;
+    $title = ($bookinfo->volumeInfo)->title;
+    $subtitle = (isset($bookinfo->volumeInfo->subtitle) ? $bookinfo->volumeInfo->subtitle   : '' );
+    $author= (isset(($bookinfo->volumeInfo)->authors[0]) ? $bookinfo->volumeInfo->authors[0]   : '' );
+    $review = (isset(($bookinfo->volumeInfo)->description) ? $bookinfo->volumeInfo->description   : '' );
+    //print_r($title . '|' . $subtitle . '|' . $author . '|' . $review);
+    $industry_key = $bookinfo->volumeInfo->industryIdentifiers;
+    if (count($industry_key) == 0) {
+        return 0;
+    }
+    $id = trim($industry_key[0]->identifier);
+    $id_type = trim($industry_key[0]->type);
     $rtn = $wpdb->query($wpdb->prepare(
 	    "
 		insert into $table_name
@@ -120,7 +127,7 @@ function book_action($postarray)
 
 	
 	if ($postarray['bookshelf_survey'] == '2')
-	{
+        {
 		return $list_books;
 	}
 	if ($postarray['bookshelf_survey'] == '3')
@@ -136,9 +143,14 @@ function book_action($postarray)
 		return $back_to_view_lib;
 	//	return $google_search;
         }
+	if ($postarray['bookshelf_survey'] == '6')
+	{
+		return $db_update;
+        }
 	if ($postarray['books_to_delete'] != '' && $postarray['nick'] != '') {
 		return $delete_books_now;
 	}
+        /******
 	if ($postarray['t1'] != '' && $postarray['bookselected'] != '6')
 	{
 		if ($postarray['t1'] == $_SESSION['t1']) {
@@ -152,6 +164,7 @@ function book_action($postarray)
 		return $db_update;
 
 	}
+        *******/
 	if ($postarray['t1'] != '' && $postarray['bookselected'] == '6')
 	{
 		if ($postarray['t1'] == $_SESSION['t1']) {
@@ -211,7 +224,8 @@ case 1:
 	echo '    <th>Count</th>';
 	echo '    <th>Title</th>';
 	echo '    <th>Author</th>';
-	echo '    <th>Key</th>';
+	echo '    <th>ISBN</th>';
+	echo '    <th>GoogleID</th>';
         if ($dbooks) {
             echo '    <th>Delete</th>';
         }
@@ -230,6 +244,7 @@ case 1:
 			echo "<td> " . $row->title . "</td>";
 			echo "<td>" . $row->author . "</td>";
 			echo "<td>" . $row->bookid . "</td>";
+			echo "<td class='hideANDseek'>" . $row->googleid . "</td>";
 
                         if ($dbooks){
                         echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
@@ -242,9 +257,10 @@ case 2:
 	echo '  <tr>';
 	echo '    <th>Title</th>';
 	echo '    <th>Author</th>';
-	echo '    <th>Key</th>';
+	echo '    <th>ISBN</th>';
 	echo '    <th>Library</th>';
 	echo '    <th>Shelf</th>';
+	echo '    <th>GoogleID</th>';
 	echo '    <th>Count</th>';
 	echo '  </tr>';
 	$row_nm = 0;
@@ -261,6 +277,7 @@ case 2:
 			echo "<td>" . $row->bookid . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
+			echo "<td class='hideANDseek'>" . $row->googleid . "</td>";
 			echo "<td>" . $row->knt . "</td>";
                         if ($dbooks){
                         echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
@@ -273,9 +290,10 @@ case 3:
 	echo '  <tr>';
 	echo '    <th>Title</th>';
 	echo '    <th>Author</th>';
-	echo '    <th>Key</th>';
+	echo '    <th>ISBN</th>';
 	echo '    <th>Nickname</th>';
 	echo '    <th>Shelf</th>';
+	echo '    <th>GoogleID</th>';
 	echo '    <th>Count</th>';
 	echo '  </tr>';
 	$row_nm = 0;
@@ -292,6 +310,7 @@ case 3:
 			echo "<td>" . $row->bookid . "</td>";
 			echo "<td>" . $row->nick_id . "</td>";
 			echo "<td>" . $row->shelf_name . "</td>";
+			echo "<td class='hideANDseek'>" . $row->googleid . "</td>";
 			echo "<td>" . $row->knt . "</td>";
                         if ($dbooks){
                         echo "<td><input id='$row_nm' type='checkbox' name='$row_nm' value='$k'  class='chk'></td>"; 
