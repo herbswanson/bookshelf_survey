@@ -132,8 +132,8 @@ ul.rel-results {
 
 
 </style>
-<div ng-app="MyApp">
-  <div class="container-fluid outerdiv" ng-controller="bookCtrl">
+<div>
+  <div class="container-fluid outerdiv">
       <!--
    <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -149,11 +149,9 @@ ul.rel-results {
   </noscript>
 
   <div class="animated zoomInRight">
-    <div class="input-group search-bar">
-      <input type="hidden" ng-model="search" ng-model-options="{ debounce: 800 }" onclick="select()" class="form-control" placeholder="Enter book title" autofocus />
-      <span class="input-group-addon bar-style"><i class="glyphicon glyphicon-search"></i></span>
-    </div>
+      <!--
       <div >
+      -->
     <div id="main-info" class="col-sm-8">
         <img ng-src="{{bookInfo.imageLinks.smallThumbnail}}" class="thumbnail animated flip movie-poster">
 

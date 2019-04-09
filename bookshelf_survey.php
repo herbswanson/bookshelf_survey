@@ -12,8 +12,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
 <script>
 $(document).ready(function() {
-$("#help_button").click(function(){
-    $("#help_page").toggle();
+    $('#help_button').click(function(){
+        $('#help_page').toggle();
 })
   // all custom jQuery will go here
 });
@@ -96,7 +96,7 @@ $("#help_button").click(function(){
                     <form id="theBookForm" name="theBookForm" action="" method="post" >     
 		    <div class="searchterm">
                     <label style="font-size:30px; font-weight:800; " for="inputlg">Enter title, author, isbn number</label>
-	            <input class="forms-control input-lg"  type="text" name="t1" value="">
+                    <input ng-model="search" ng-model-options="{ debounce: 800 }" onclick="select()" class="form-control input-lg" placeholder="Enter book title" autofocus />
 	            <input type="hidden" name="bookshelf_survey" value="1">
 	            <input type="hidden" name="bookselected" value="6">
 	            <input type="hidden" name="books_to_delete" value="">
@@ -127,7 +127,7 @@ $("#help_button").click(function(){
             </div>
             <div class="row">
                     <div class="col-md-6">
-                        <button type="button" class="btn btn-primary btn-lg" id="help_button">Help</button>
+                        <button  type="button" class="btn btn-primary btn-lg " id="help_button">Help</button>
                     </div>
                     <div class="col-md-6"></div>
             </div>
@@ -139,64 +139,11 @@ $("#help_button").click(function(){
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
 </div> <!-- container -->
-<div  class="container display_text " style="text-align:left">
-    <div class=row>
 
-    <div style="display:none" class="col-md-8 display_text " id="help_page">
-<h2> Help Page </h2>
-<p>This tool allows a person to recommend a book to the Saker BookShelf. In addition it allows an individual to maintain their own library of books and sub divided by bookshelfs if desired. Google books api is used to finds and obtain book info. Google has quotas so at times this tools may fail to work if we exceed our daily quota. <br> 
-The Saker database will contain all books recommended by our readers and will
-be used to help select the top  50 books.</p>
-
-<h3>Look up Book and Enter book in database</h3>
-<p>1. Enter either title,author or isnb number</p>
-<p>2. press 'Search for Book'</p>
-<p>3. Using radio buttons (Below Clear button) to select one of 5 book returned.</p>
-<p>4. Then 'Press here to Select Book' to enter into Saker database.</p>
-<p>5. If none of the books match re-enter search term (step 1) and search again</p>
-<p>(step 2) </p>
-<p>6. Press the 'Clear' to return to beginning</p>
-
-<h3>View top 50 books entered in Saker Database</h3>
-<p>1. Press 'Clear' to return to start</p>
-<p>2. Press 'View Library'</p>
-<p>3. Top 50 books will be displayed (number of readers recommending "count")</p>
-<p>4  Press 'Clear' to return to start</p>
-
-<h3>View a non top 50 book in Saker database</h3>
-<p>1. Press 'Clear' to return to start</p>
-<p>2. Enter in title,author,isbn entry area</p>
-<p>3. Press view Library </p>
-<p>4. all matching books in Saker database will be returned</p>
-<p>5  Press 'Clear' to return to start</p>
-
-<h3>Enter books in your Library/BookShelf</h3>
-<p>A library can be subdivided by entering a 'Bookshelf Name'</p>
-<p>1. Press 'Clear' to return to start</p>
-<p>2. Enter in title,author,isbn entry area</p>
-<p>3. Enter your library name in 'My Library' </p>
-<p>4. Press 'Search for Book</p>
-<p>5. Select book using radio buttons</p>
-<p>6. Then 'Press here to Select Book' to enter into database.</p>
-<p>7. if a 2nd book is to be added</p>
-<p>      a. Enter in another book in title,author, isbn </p>
-<p>      b. repeat steps 4-6</p>
-<p>8. Press 'Clear' to return to start</p>
-
-<h3>Delete books from your Library</h3>
-<p>1. Enter in your library name 'My Library'</p>
-<p>2. Press the 'Delete Book' key</p>
-<p>3. select the books to delete by clicking on checkbox on far right of book</p>
-<p>4. Press 'Delete Book'</p>
-<p>5. Press 'Clear' to return to start</p>
-
-        </div>
-    <div class="col-md-4"></div>
-    </div>
-</div> <!-- end of help -->
-
-
-
+<?php
+    readfile("./bookshelf_help.html");
+    readfile("./bookshelf_book.html");
+?>
 
 
 
@@ -209,11 +156,33 @@ be used to help select the top  50 books.</p>
 <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
 <script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.4/angular-material.js'></script>
 <script>
-  var app = angular.module('bookApp', []);
-  app.controller('book_Ctrl', function($scope) {
-      
-  });
+  var app = angular.module('bookApp', ['ngMaterial', 'ngMessages', 'material.svgAssetsCache']);
+  app.controller('book_Ctrl', function($scope,$http) {
+   
+    $scope.$watch('search', function() {
+    fetch();
+    });
+    $scope.search = "The Essential Saker";
 
+    function fetch() {
+    $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.search).then(function(res) {
+  		console.log(res.data);
+
+      document.theBookForm.google_book_id.value = res.data.items[0]['id'];
+      //          alert(document.theBookForm.bookselected.value);
+      $scope.relatedBooks = res.data.items;
+      $scope.bookInfo = res.data.items[0].volumeInfo;
+      $scope.saleInfo = res.data.items[0].saleInfo;
+      $scope.related = res.data;
+    });
+       
+      
+  }
+    $scope.update = function(book) {
+      $scope.search = book.volumeInfo.title;
+//      document.theBookForm.t1.value = $scope.search;
+    };
+})
 </script>
 </body>
 </html>

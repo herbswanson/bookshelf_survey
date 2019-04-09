@@ -190,7 +190,17 @@ function book_action($postarray)
 
 }
 function build_booklists($t1,$nick,$shelf,$dbooks) {
-global $wpdb;
+//global $wpdb;
+$host     = "localhost";
+$user     = "herb";
+$password = "redwine";
+$database = "bookshelf";
+$wpdb = new mysqli($host, $user, $password, $database);
+if ($wpdb->connect_errno) {
+        echo "Failed to connect to MySQL: " . $mysqli->connect_error;
+        
+}
+
 if ($t1 == '' && $nick == null )
 {
 	$q = 1;
@@ -323,7 +333,16 @@ echo '</table>';
 }
 function bookdb_delete($books_tobe_deleted,$nick)
 {
-global $wpdb;
+//global $wpdb;
+$host     = "localhost";
+$user     = "herb";
+$password = "redwine";
+$database = "bookshelf";
+$wpdb = new mysqli($host, $user, $password, $database);
+if ($wpdb->connect_errno) {
+        echo "Failed to connect to MySQL: " . $mysqli->connect_error;
+        
+}
 foreach($books_tobe_deleted as $book_key) {
         $q1 = "delete from wp_bookshelf_personal where bookid = '$book_key'";
         $q2 = "update wp_bookshelf set knt = knt -1 where bookid = '$book_key' and knt > 0";
@@ -332,7 +351,16 @@ foreach($books_tobe_deleted as $book_key) {
 	}
 }
 function bookdb_info($key ) {
-        global $wpdb;
+        //global $wpdb;
+$host     = "localhost";
+$user     = "herb";
+$password = "redwine";
+$database = "bookshelf";
+$wpdb = new mysqli($host, $user, $password, $database);
+if ($wpdb->connect_errno) {
+        echo "Failed to connect to MySQL: " . $mysqli->connect_error;
+        
+}
         $q = "select * from wp_bookshelf where bookid = '$key' ";
         $result = $wpdb->get_results( $q);
         return $result;
