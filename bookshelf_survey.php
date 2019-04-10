@@ -8,7 +8,6 @@
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
 <link rel='stylesheet' href='new_bookshelf_survey.css'>
 
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
 <script>
 $(document).ready(function() {
@@ -23,6 +22,7 @@ $(document).ready(function() {
   display: grid;
   grid-gap: 10px;
   padding: 0px;
+  width:1100px;
 }
 
 .container > div {
@@ -67,6 +67,9 @@ $(document).ready(function() {
 .hidden {
     { display: none }
 }
+.row_m_top{
+    margin-top:15px;
+}
 
 </style>
 
@@ -79,7 +82,7 @@ $(document).ready(function() {
     <div class="col-md-4">
         <div class="well" id="bird">
             <h3>Saker BookShelf</h3>
-            <img src="http://vsaker.net/wp-content/uploads/2019/02/saker_body-300x200.jpg" alt="" width="300" height="200" class="alignnone size-medium wp-image-200">
+            <img src="http://vsaker.net/wp-content/uploads/2019/02/saker_body-300x200.jpg" alt="" width="280" height="200" class="alignnone size-medium wp-image-200">
             <p> We are asking our readers to submit the titles and authors of their favorite books. These will be reviewed and selected books will be included in the BookShelf.
 	</p>
         </div>
@@ -104,36 +107,68 @@ $(document).ready(function() {
 	            <input type="hidden" name="google_book_id" value="">
                     </form>
 	    </div>	
-            <div class="row"> <div class="col-md-3 bordered ">
-		        <button  ng-click="searchBook()" type="button" class="btn btn-primary btn-lg" id="search_button">Search for Book</button>
+<div>
+           
+        <div>
+            <div class="row row_m_top">
+                    <div class="col-md-3 bordered ">
+		        <button  ng-click="searchBook()" type="button" class="btn btn-primary btn-lg btn-block" id="search_button">Search for Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg" id="view_button">View Library</button>
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="save_button">Save Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg" id="delete_button">Delete Book</button>
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="view_button">View Library</button>
                     </div>
-		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg" id="clear_button">Clear</button>
+		    <div class="col-md-3 bordered border-right-0">
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="delete_button">Delete Book</button>
+                    </div>
+ 
             </div>
-            <div class="row">
+  
+           
+            <div class="row row_m_top">
+		    <div class="col-md-3 bordered ">
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="help_button">Help</button>
+                    </div>
+		    <div class="col-md-3 bordered ">
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Clear</button>
+                    </div>
                     <div class="col-md-6">
 			   <label style="font-size:16px; font-weight:800; " for="inputlg">My Library (Name)</label>
-                           <input  class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
-                    </div>
-                    <div class="col-md-6">
-                            <label style="font-size:16px; font-weight:800; " for="inputlg">My Bookshelf</label>
-                            <input class="forms-control input-lg" id="shelf_in" type="text" placeholder="Optional not required ..." name="bs_personal">
                     </div>
             </div>
-            <div class="row">
-                    <div class="col-md-6">
-                        <button  type="button" class="btn btn-primary btn-lg " id="help_button">Help</button>
+            <div class="row row_m_top">
+		    <div class="col-md-3 bordered ">
                     </div>
-                    <div class="col-md-6"></div>
+		    <div class="col-md-3 bordered ">
+                    </div>
+                    <div class="col-md-6">
+                           <input class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
+                    </div>
             </div>
-            
+            <div class="row ">
+		    <div class="col-md-3 bordered ">
+                    </div>
+		    <div class="col-md-3 bordered ">
+                    </div>
+                    <div class="col-md-6">
+			   <label style="font-size:16px; font-weight:800; " for="inputlg">BookShelf</label>
+                    </div>
+            </div>
+            <div class="row row_m_top">
+		    <div class="col-md-3 bordered ">
+                    </div>
+		    <div class="col-md-3 bordered ">
+                    </div>
+                    <div class="col-md-6">
+                           <input class="forms-control input-lg" id="shelf_in" type="text" placeholder="Optional not required ..." name="bs_personal">
+                    </div>
+            </div>
 
+            </div> <!-- buttons plus mylib -->
+            </div> <!-- 'form' division -->
+        
             </div> <!-- buttons plus mylib -->
             </div> <!-- 'form' division -->
         </div> <!-- division containing forms and buttons -->
