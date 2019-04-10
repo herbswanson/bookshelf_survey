@@ -73,6 +73,7 @@ $(document).ready(function() {
 </head>
 
 <body ng-app="bookApp" ng-controller="book_Ctrl">
+
 <div class="container">
 <div class="row">
     <div class="col-md-4">
@@ -93,10 +94,10 @@ $(document).ready(function() {
      <div class="col-md-8">
         <div class="row">
             <div>
-                    <form id="theBookForm" name="theBookForm" action="" method="post" >     
-		    <div class="searchterm">
+                    <form id="theBookForm"   name="theBookForm" action="" method="post" >     
+		    <div>
                     <label style="font-size:30px; font-weight:800; " for="inputlg">Enter title, author, isbn number</label>
-                    <input ng-model="search" ng-model-options="{ debounce: 800 }" onclick="select()" class="form-control input-lg" placeholder="Enter book title" autofocus />
+                    <input id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-enter="searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
 	            <input type="hidden" name="bookshelf_survey" value="1">
 	            <input type="hidden" name="bookselected" value="6">
 	            <input type="hidden" name="books_to_delete" value="">
@@ -104,7 +105,7 @@ $(document).ready(function() {
                     </form>
 	    </div>	
             <div class="row"> <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg" id="search_button">Search for Book</button>
+		        <button  ng-click="searchBook()" type="button" class="btn btn-primary btn-lg" id="search_button">Search for Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
 		        <button  type="button" class="btn btn-primary btn-lg" id="view_button">View Library</button>
@@ -118,7 +119,7 @@ $(document).ready(function() {
             <div class="row">
                     <div class="col-md-6">
 			   <label style="font-size:16px; font-weight:800; " for="inputlg">My Library (Name)</label>
-                           <input class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
+                           <input  class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
                     </div>
                     <div class="col-md-6">
                             <label style="font-size:16px; font-weight:800; " for="inputlg">My Bookshelf</label>
@@ -139,6 +140,7 @@ $(document).ready(function() {
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
 </div> <!-- container -->
+<p> hello world {{searchTerm}}</p>
 
 <?php
     readfile("./bookshelf_help.html");
@@ -156,16 +158,53 @@ $(document).ready(function() {
 <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
 <script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.4/angular-material.js'></script>
 <script>
+
+         /*****************  app creation **************************/
   var app = angular.module('bookApp', ['ngMaterial', 'ngMessages', 'material.svgAssetsCache']);
-  app.controller('book_Ctrl', function($scope,$http) {
-   
-    $scope.$watch('search', function() {
-    fetch();
+    
+ /*
+This directive allows us to pass a function in on an enter key to do what we want.
+https://eric.sau.pe/angularjs-detect-enter-key-ngenter/
+ */
+app.directive('ngEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});
+/***********************************************************************************/
+ 
+
+  app.controller('book_Ctrl', function($scope,$http,$document) {
+
+      console.log('entering in app.controller val scope:'+$scope);
+      $scope.searchTerm = "Essential Saker";
+      fetch();
+/*********************************************
+    $scope.$watch('searchTerm', function() {
+        console.log('here in watch function')
+        fetch();
     });
-    $scope.search = "The Essential Saker";
+*********************************************/
+ $scope.enterPressed = function () {
+	console.log("enter has been pressed");
+        fetch();
+    }
+
+    $scope.searchBook = function() {
+        console.log('got click from search'+$scope.searchTerm);
+       fetch();
+}
 
     function fetch() {
-    $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.search).then(function(res) {
+    $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.searchTerm).then(function(res) {
   		console.log(res.data);
 
       document.theBookForm.google_book_id.value = res.data.items[0]['id'];
@@ -179,8 +218,9 @@ $(document).ready(function() {
       
   }
     $scope.update = function(book) {
-      $scope.search = book.volumeInfo.title;
-//      document.theBookForm.t1.value = $scope.search;
+      $scope.searchTerm = book.volumeInfo.title;
+      console.log("now within update:"+book.volumeInfo.title)
+      fetch();
     };
 })
 </script>

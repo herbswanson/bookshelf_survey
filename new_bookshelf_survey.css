@@ -219,10 +219,9 @@ body
 	position:absolute;
 	top: -10px;
 }
-.searchterm {
-	  grid-column-start: 1; 
-	  grid-column-end: 3;
-}
+textarea#searchterm {
+        background:lightblue;
+    }
 .nicklist {
     vertical-align: baseline;
     padding: 0px;
