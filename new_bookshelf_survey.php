@@ -244,7 +244,7 @@ file_put_contents('/var/www/html/wp-content/themes/yaaburnee-themes-child/new_bo
 
 <h1 class="header">Saker BookShelf</h1>
 <style>
-<?php include 'new_bookshelf_survey.css'; ?> 
+<?php // include 'new_bookshelf_survey.css'; ?> 
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
 <script>

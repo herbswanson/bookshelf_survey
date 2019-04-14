@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<head>
-    <title> Saker BookShelf</title>
+<!DOCTYPE html> <head>
+<title> Saker BookShelf</title>
 <meta  content="HTML,CSS,XML,JavaScript" charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
 <link rel='stylesheet' href='https://material.angularjs.org/1.1.4/docs.css'>
@@ -11,13 +10,46 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
 <script>
 $(document).ready(function() {
+
+
+
     $('#help_button').click(function(){
         $('#help_page').toggle();
-})
-  // all custom jQuery will go here
+    });
+    /*****************************************
+    $("#view_library").click(function(event) {
+               $.post( 
+                  "result.php",
+                  { name: "Zara" },
+                  function(data) {
+                     jobj = JSON.parse(data);
+                     $('#stage').html(data);
+                  }
+               );
+
+       
+    });
+    ****************************************/
 });
+  // all custom jQuery will go here
 </script>
 <style>
+table, th , td {
+  border: 1px solid grey;
+  border-collapse: collapse;
+  padding: 5px;
+
+}
+
+table tr:nth-child(odd) {
+  background-color: #f1f1f1;
+
+}
+
+table tr:nth-child(even) {
+  background-color: #ffffff;
+
+}
 .container {
   display: grid;
   grid-gap: 10px;
@@ -100,7 +132,7 @@ $(document).ready(function() {
                     <form id="theBookForm"   name="theBookForm" action="" method="post" >     
 		    <div>
                     <label style="font-size:30px; font-weight:800; " for="inputlg">Enter title, author, isbn number</label>
-                    <input id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-enter="searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
+                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-enter="searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
 	            <input type="hidden" name="bookshelf_survey" value="1">
 	            <input type="hidden" name="bookselected" value="6">
 	            <input type="hidden" name="books_to_delete" value="">
@@ -118,7 +150,7 @@ $(document).ready(function() {
 		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="save_button">Save Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="view_button">View Library</button>
+		        <button  ng-click='viewLibrary();' type="button" class="btn btn-primary btn-lg btn-block" id="view_library">View Library</button> 
                     </div>
 		    <div class="col-md-3 bordered border-right-0">
 		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="delete_button">Delete Book</button>
@@ -132,7 +164,7 @@ $(document).ready(function() {
 		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="help_button">Help</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Clear</button>
+		        <button ng-click="reloadPage();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Reset</button>
                     </div>
                     <div class="col-md-6">
 			   <label style="font-size:16px; font-weight:800; " for="inputlg">My Library (Name)</label>
@@ -144,7 +176,7 @@ $(document).ready(function() {
 		    <div class="col-md-3 bordered ">
                     </div>
                     <div class="col-md-6">
-                           <input class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
+                           <input value='' ng-model="personal_lib" class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
                     </div>
             </div>
             <div class="row ">
@@ -162,7 +194,7 @@ $(document).ready(function() {
 		    <div class="col-md-3 bordered ">
                     </div>
                     <div class="col-md-6">
-                           <input class="forms-control input-lg" id="shelf_in" type="text" placeholder="Optional not required ..." name="bs_personal">
+                           <input value='' ng-model="personal_shelf" class="forms-control input-lg" id="shelf_in" type="text" placeholder="Optional not required ..." name="bs_personal">
                     </div>
             </div>
 
@@ -174,14 +206,28 @@ $(document).ready(function() {
         </div> <!-- division containing forms and buttons -->
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
-</div> <!-- container -->
+     <div id = "stage" style = "background-color:cc0;">
+         STAGE
+      </div>
+
 <p> hello world {{searchTerm}}</p>
 
 <?php
     readfile("./bookshelf_help.html");
     readfile("./bookshelf_book.html");
 ?>
+<div>
+</div>
 
+  <table border="1">
+    <tr>
+        <th ng-repeat="column in cols">{{column}}</th>
+    </tr>
+    <tr ng-repeat="row in rows">
+      <td ng-repeat="column in cols">{{row[column]}}</td>
+    </tr>
+  </table>
+</div> <!-- container -->
 
 
    
@@ -195,7 +241,7 @@ $(document).ready(function() {
 <script>
 
          /*****************  app creation **************************/
-  var app = angular.module('bookApp', ['ngMaterial', 'ngMessages', 'material.svgAssetsCache']);
+  var app = angular.module('bookApp', ['ngRoute', 'ngMaterial', 'ngMessages', 'material.svgAssetsCache']);
     
  /*
 This directive allows us to pass a function in on an enter key to do what we want.
@@ -217,25 +263,58 @@ app.directive('ngEnter', function () {
 /***********************************************************************************/
  
 
-  app.controller('book_Ctrl', function($scope,$http,$document) {
+  app.controller('book_Ctrl', function($scope,$route,$http,$document) {
 
       console.log('entering in app.controller val scope:'+$scope);
       $scope.searchTerm = "Essential Saker";
       fetch();
-/*********************************************
-    $scope.$watch('searchTerm', function() {
-        console.log('here in watch function')
-        fetch();
-    });
-*********************************************/
- $scope.enterPressed = function () {
+      $scope.index = 0;
+      $scope.tables = [];
+
+      $scope.viewLibrary = function(){
+            $scope.showSearch = false;
+            $scope.showSearch = function(){
+                return false;
+            }
+            var request = $http({
+		    method: "post",
+		    url: "/result.php",
+                    data: {
+                            searchterm: $scope.searchTerm,
+                                /*
+                            personal_lib: $scope.personal_lib,
+                            pass: $scope.personal_shelf
+                                 */
+		    },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+
+                
+		request.success(function (result) {
+                $scope.rows = result;
+                $scope.cols = Object.keys($scope.rows[0]);
+                });
+        }
+
+      $scope.reloadPage = function(){
+          console.log('here within reloadpage');
+          window.location.reload();
+      }
+
+    $scope.enterPressed = function () {
 	console.log("enter has been pressed");
         fetch();
+        $scope.showSearch = function(){
+            return true;
+        }
     }
 
     $scope.searchBook = function() {
         console.log('got click from search'+$scope.searchTerm);
        fetch();
+       $scope.showSearch = function(){
+            return true;
+        }
 }
 
     function fetch() {
