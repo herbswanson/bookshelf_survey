@@ -132,11 +132,15 @@ table tr:nth-child(even) {
                     <form id="theBookForm"   name="theBookForm" action="" method="post" >     
 		    <div>
                     <label style="font-size:30px; font-weight:800; " for="inputlg">Enter title, author, isbn number</label>
-                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-enter="searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
+                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-keydown ="event.keyCode === 13 && searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
+<!--
+                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }"  class="form-control input-lg" placeholder="Enter book title" autofocus />
+-->
 	            <input type="hidden" name="bookshelf_survey" value="1">
 	            <input type="hidden" name="bookselected" value="6">
 	            <input type="hidden" name="books_to_delete" value="">
-	            <input type="hidden" name="google_book_id" value="">
+	            <input type="hidden" name="google_book_id" value="" ng-model="google_book_id">
+	            <input type="hidden" name="google_book_title" value="" ng-model="google_book_title">
                     </form>
 	    </div>	
 <div>
@@ -246,7 +250,6 @@ table tr:nth-child(even) {
  /*
 This directive allows us to pass a function in on an enter key to do what we want.
 https://eric.sau.pe/angularjs-detect-enter-key-ngenter/
- */
 app.directive('ngEnter', function () {
     return function (scope, element, attrs) {
         element.bind("keydown keypress", function (event) {
@@ -260,18 +263,23 @@ app.directive('ngEnter', function () {
         });
     };
 });
+ */
 /***********************************************************************************/
  
 
   app.controller('book_Ctrl', function($scope,$route,$http,$document) {
 
       console.log('entering in app.controller val scope:'+$scope);
-      $scope.searchTerm = "Essential Saker";
-      fetch();
+      $scope.google_book_title = '';
+      $scope.searchTerm = "";
+      fetch(0);
       $scope.index = 0;
       $scope.tables = [];
 
       $scope.viewLibrary = function(){
+            if (typeof $scope.searchTerm == 'undefined') {$scope.searchTerm = '';}
+            if (typeof $scope.personal_lib == 'undefined') {$scope.personal_lib = '';}
+            if (typeof $scope.personal_shelf == 'undefined') {$scope.personal_shelf = '';}
             $scope.showSearch = false;
             $scope.showSearch = function(){
                 return false;
@@ -281,8 +289,8 @@ app.directive('ngEnter', function () {
 		    url: "/result.php",
                     data: {
                             searchterm: $scope.searchTerm,
-                                /*
                             personal_lib: $scope.personal_lib,
+                                /*
                             pass: $scope.personal_shelf
                                  */
 		    },
@@ -311,30 +319,57 @@ app.directive('ngEnter', function () {
 
     $scope.searchBook = function() {
         console.log('got click from search'+$scope.searchTerm);
-       fetch();
+        $scope.google_book_title = $scope.searchTerm;
+       fetch(0);
        $scope.showSearch = function(){
             return true;
         }
 }
 
-    function fetch() {
-    $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.searchTerm).then(function(res) {
+    function fetch(getType) {
+        if (typeof getType === "undefined") {var getType = 0;}
+        if (getType == 1) {
+            $http.get("https://www.googleapis.com/books/v1/volumes/"+ $scope.google_book_id).then(function(res2) {
+                $scope.google_book_id  = res2.data.id;
+                $scope.bookInfo = res2.data.volumeInfo;
+                $scope.saleInfo = res2.data.saleInfo;
+        //        $scope.searchTerm = res2.data.volumeInfo.title;
+                $scope.google_book_title = $scope.bookInfo.title;
+            });
+            $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.google_book_title).then(function(res) {
+                 $scope.relatedBooks = res.data.items;
+           
+            });
+        } else {
+
+            $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.google_book_title).then(function(res) {
   		console.log(res.data);
 
-      document.theBookForm.google_book_id.value = res.data.items[0]['id'];
+              document.theBookForm.google_book_id.value = res.data.items[0]['id'];
       //          alert(document.theBookForm.bookselected.value);
-      $scope.relatedBooks = res.data.items;
-      $scope.bookInfo = res.data.items[0].volumeInfo;
-      $scope.saleInfo = res.data.items[0].saleInfo;
-      $scope.related = res.data;
-    });
-       
+                 $scope.google_book_id  = res.data.items[0].id;
+                 $scope.relatedBooks = res.data.items;
+                 $scope.bookInfo = res.data.items[0].volumeInfo;
+                 $scope.saleInfo = res.data.items[0].saleInfo;
+                 $scope.related = res.data;
+         //        $scope.searchTerm = res.data.items[0].volumeInfo.title;
+                 $scope.google_book_title = $scope.bookInfo.title;
+              });
+        }
+                $scope.searchTerm = ''; 
+    }
       
-  }
     $scope.update = function(book) {
-      $scope.searchTerm = book.volumeInfo.title;
+        $scope.google_book_title = book.volumeInfo.title;
+        $scope.searchTerm = ''; 
+        if ($scope.google_book_id != book.id) {
+            $scope.google_book_id= book.id;
+            fetch(1);
+        } else {
+            $scope.google_book_title = book.volumeInfo.title;
+            fetch(0);
+        }
       console.log("now within update:"+book.volumeInfo.title)
-      fetch();
     };
 })
 </script>
