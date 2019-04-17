@@ -132,7 +132,7 @@ table tr:nth-child(even) {
                     <form id="theBookForm"   name="theBookForm" action="" method="post" >     
 		    <div>
                     <label style="font-size:30px; font-weight:800; " for="inputlg">Enter title, author, isbn number</label>
-                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-keydown ="event.keyCode === 13 && searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
+                    <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }" ng-enter="searchBook()" class="form-control input-lg" placeholder="Enter book title" autofocus />
 <!--
                     <input value='' id='searchterm' ng-model="searchTerm"  ng-model-options="{ debounce: 800 }"  class="form-control input-lg" placeholder="Enter book title" autofocus />
 -->
@@ -151,7 +151,7 @@ table tr:nth-child(even) {
 		        <button  ng-click="searchBook()" type="button" class="btn btn-primary btn-lg btn-block" id="search_button">Search for Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="save_button">Save Book</button>
+		        <button  ng-click='saveBook()' type="button" class="btn btn-primary btn-lg btn-block" id="save_button">Save Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
 		        <button  ng-click='viewLibrary();' type="button" class="btn btn-primary btn-lg btn-block" id="view_library">View Library</button> 
@@ -211,10 +211,8 @@ table tr:nth-child(even) {
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
      <div id = "stage" style = "background-color:cc0;">
-         STAGE
+<p> hello world {{message}}</p>
       </div>
-
-<p> hello world {{searchTerm}}</p>
 
 <?php
     readfile("./bookshelf_help.html");
@@ -247,9 +245,6 @@ table tr:nth-child(even) {
          /*****************  app creation **************************/
   var app = angular.module('bookApp', ['ngRoute', 'ngMaterial', 'ngMessages', 'material.svgAssetsCache']);
     
- /*
-This directive allows us to pass a function in on an enter key to do what we want.
-https://eric.sau.pe/angularjs-detect-enter-key-ngenter/
 app.directive('ngEnter', function () {
     return function (scope, element, attrs) {
         element.bind("keydown keypress", function (event) {
@@ -263,8 +258,6 @@ app.directive('ngEnter', function () {
         });
     };
 });
- */
-/***********************************************************************************/
  
 
   app.controller('book_Ctrl', function($scope,$route,$http,$document) {
@@ -272,10 +265,13 @@ app.directive('ngEnter', function () {
       console.log('entering in app.controller val scope:'+$scope);
       $scope.google_book_title = '';
       $scope.searchTerm = "";
+      $scope.message = 'hello world';
+      purchaseSite_p1 = "https://www.bookfinder.com/search/?lang=en&currency=USD&ac=qr&isbn=";
+      purchaseSite_p2 = "&mode=basic&destination=us&new_used=*&st=sr";
       fetch(0);
       $scope.index = 0;
       $scope.tables = [];
-
+      
       $scope.viewLibrary = function(){
             if (typeof $scope.searchTerm == 'undefined') {$scope.searchTerm = '';}
             if (typeof $scope.personal_lib == 'undefined') {$scope.personal_lib = '';}
@@ -284,15 +280,14 @@ app.directive('ngEnter', function () {
             $scope.showSearch = function(){
                 return false;
             }
-            var request = $http({
+           var request = $http({
 		    method: "post",
 		    url: "/result.php",
                     data: {
+                            transactionId: 'viewLib',
                             searchterm: $scope.searchTerm,
                             personal_lib: $scope.personal_lib,
-                                /*
-                            pass: $scope.personal_shelf
-                                 */
+                            personal_shelf: $scope.personal_shelf
 		    },
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
@@ -304,22 +299,47 @@ app.directive('ngEnter', function () {
                 });
         }
 
+      $scope.saveBook = function(){
+          console.log('here within saveBook');
+          if ($scope.google_book_id == '') {return;}
+          var request = $http({
+		    method: "post",
+		    url: "/result.php",
+                    data: {
+                            transactionId: 'saveBook',
+                            googleid: $scope.google_book_id,
+                            personal_lib: $scope.personal_lib,
+                            personal_shelf: $scope.personal_shelf
+		    },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+
+                
+		request.success(function (result) {
+                $scope.message = result;
+                });
+         
+      }
+
       $scope.reloadPage = function(){
           console.log('here within reloadpage');
           window.location.reload();
       }
 
+      /***********
     $scope.enterPressed = function () {
 	console.log("enter has been pressed");
-        fetch();
+        fetch(0);
         $scope.showSearch = function(){
             return true;
         }
     }
+    ***********/
 
     $scope.searchBook = function() {
         console.log('got click from search'+$scope.searchTerm);
         $scope.google_book_title = $scope.searchTerm;
+        console.log('hexdump of searchterm:'+$scope.searchTerm.toString(16));
        fetch(0);
        $scope.showSearch = function(){
             return true;
@@ -335,6 +355,11 @@ app.directive('ngEnter', function () {
                 $scope.saleInfo = res2.data.saleInfo;
         //        $scope.searchTerm = res2.data.volumeInfo.title;
                 $scope.google_book_title = $scope.bookInfo.title;
+
+                isbnRe = /ISBN/;
+                if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
+                    $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
+                }
             });
             $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.google_book_title).then(function(res) {
                  $scope.relatedBooks = res.data.items;
@@ -354,6 +379,11 @@ app.directive('ngEnter', function () {
                  $scope.related = res.data;
          //        $scope.searchTerm = res.data.items[0].volumeInfo.title;
                  $scope.google_book_title = $scope.bookInfo.title;
+
+                isbnRe = /ISBN/;
+                if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
+                    $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
+                }
               });
         }
                 $scope.searchTerm = ''; 
@@ -371,6 +401,12 @@ app.directive('ngEnter', function () {
         }
       console.log("now within update:"+book.volumeInfo.title)
     };
+    function bufferToHex(buffer) {
+            var s = '', h = '0123456789ABCDEF';
+                (new Uint8Array(buffer)).forEach((v) => { s += h[v >> 4] + h[v & 15];  });
+                return s;
+                
+    }
 })
 </script>
 </body>

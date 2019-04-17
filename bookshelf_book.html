@@ -129,6 +129,20 @@ ul.rel-results {
 #modalBody {
   color: #0066CC;
 }
+#extraInfo {
+    clear:both;
+}
+#externalLinks {
+    clear:both;
+    color: blue;
+}
+#saleInfo {
+    float:left;
+}
+#previewText o{
+    clear:both;
+    color:blue;
+}
 
 
 </style>
@@ -166,54 +180,8 @@ ul.rel-results {
 
         <p>{{bookInfo.description}}</p>
 
-        <p class="outer-p">
-          <div class="inner-p">
-            <span class="label label-primary" >Authors :</span> 
-            <span ng-repeat="author in bookInfo.authors">{{author}}, </span>
-          </div>
-          <div class="inner-p">
-            <span class="label label-primary">Categories :</span>
-            <span ng-repeat="categories in bookInfo.categories">{{categories}}
-          </div> 
-        </p>
-  
-  <div class=" col-md-4 outer-p-2"><strong>Ratings:</strong>
-          <br>
-          Average Rating: <span class="label label-success">{{bookInfo.averageRating}}</span>
-          <br>
-          Ratings Count: <span class="label label-success">{{bookInfo.ratingsCount}}</span>
-          <br>
-          Maturity Rating: <span class="label label-success">{{bookInfo.maturityRating.split('_').join(' ')}}</span>
-        </p>
-    
-    </div>
-  <div class=" col-md-3 outer-p-2"><strong>Sale Info:</strong>
-          <br>
-          Country: <span class="label label-success">{{saleInfo.country}}</span>
-          <br>
-          Sale Ability: <span class="label label-success">{{ saleInfo.saleability.split('_').join(' ')}}</span>
-          <br>
-          List Price: <span class="label label-success">{{ saleInfo.listPrice.amount}} {{saleInfo.listPrice.currencyCode | lowercase}}</span>
-          <br>
-          Retail Price: <span class="label label-success">{{ saleInfo.listPrice.amount}} {{saleInfo.retailPrice.currencyCode | lowercase}}</span>
-        </p>
       </div>
-      <div class=" col-md-5 outer-p-2">
-        <br><br><br>
-          <md-button class="md-raised md-warn" href="{{ bookInfo.previewLink }}" target="_blank"><strong>Download .pdf</strong></md-button>
-        
-          <md-button class="md-raised md-warn" href="{{ bookInfo.previewLink }}" target="_blank"><strong>Buy this book!</strong></md-button>
-       </div>
-      </div>
-    
-
-      <div ng-if="bookInfo.res==='False'">
-        No results found.
-      </div>
-     
-    
-
-    <div id="related-results" class=" animated bounce related-results">
+ <div id="related-results" class=" animated bounce related-results col-sm-4">
         Related Results:
         <hr>
 
@@ -223,19 +191,100 @@ ul.rel-results {
           </li>
         </ul>
     </div>
-   </div>
+
+ <div id="extraInfo" class=" col-md-4 outer-p-2"><strong>Info:</strong>
+        <table>
+        <tr>
+            <td> Author:</td>
+            <td>{{bookInfo.authors[0]}} </td>
+        </tr>
+        <tr>
+            <td> Categories:</td>
+            <td>{{bookInfo.categories[0]}} </td>
+        </tr>
+       </table>
+   
+    </div>
+  <div id="saleInfo" class=" col-md-4 outer-p-2"><strong>Sale Info:</strong>
+      <table>
+        <tr>
+            <td> Country:</td>
+            <td> {{saleInfo.country}}</td>
+        </tr>
+        <tr>
+            <td> Sale Ability:</td>
+            <td>{{ saleInfo.saleability.split('_').join(' ')}}</td>
+        </tr>
+        <tr>
+            <td> List Price:</td>
+            <td>{{ saleInfo.listPrice.amount}} {{saleInfo.listPrice.currencyCode | lowercase}} </td>
+        </tr>
+        <tr>
+            <td> Retail Price:</td>
+            <td>{{ saleInfo.listPrice.amount}} {{saleInfo.retailPrice.currencyCode | lowercase}} </td>
+        </tr>
+       </table>
+      </div>
+   <div class=" col-md-4 outer-p-2"><strong>Ratings:</strong>
+       <table>
+        <tr>
+            <td> Average Rating:</td>
+            <td>{{bookInfo.averageRating}} </td>
+        </tr>
+        <tr>
+            <td> Rating Count:</td>
+            <td>{{bookInfo.ratingsCount}} </td>
+        </tr>
+        <tr>
+            <td> Maturity Rating:</td>
+            <td>{{bookInfo.maturityRating.split('_').join(' ')}}</td>
+        </tr>
+       </table>
+  </div>
+
+       </div>
+       <div id="previewText" class="col-md-12">
+           <p style="text-align:center color:blue"> </p>
+        </div>
+       <div id=externalLinks class="col-md-12">
+           <div class="col-md-1">
+                <p> </p>
+            </div>
+           <div class="col-md-4">
+		        <a  class="btn btn-primary btn-lg btn-block" href="{{ bookInfo.previewLink }}" target="_blank">Preview of Book</a>
+            </div>
+           <div class="col-md-2">
+                <p> </p>
+            </div>
+           <div class="col-md-4">
+		        <a  class="btn btn-primary btn-lg btn-block" href="{{ purchaseSite }}" target="_blank">Purchase</a> </div>
+           <div class="col-md-1">
+                <p> </p>
+            </div>
+        </div>
+        <!--
+		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="preview_button">Preview of Book</button>
+        <a href="{{ bookInfo.previewLink }}">here</a> to go to yahoo.
+   </div> 
+        -->
+      <div ng-if="bookInfo.res==='False'">
+        No results found.
+      </div>
+     
+    
+
+       </div>
+        <!--
   <div ng-if="!bookInfo">
       Failed to load resource: the server responded with a status of 403 (Forbidden)
         <br><br><br>
       </div>
+        -->
  </div> 
 </div> <!-- end of bookCtrl -->
 
 <!-- start of AppCtrl -->
 <div class="bottomLine animated zoomInRight">
 </div>
-</div>
 
-</div>
 
-</div>
