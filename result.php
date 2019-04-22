@@ -1,4 +1,9 @@
 <?php
+function xss_cleaner($input_str) {
+    $return_str = str_replace( array('<',';','|','&','>',"'",'"',')','('), array('&lt;','&#58;','&#124;','&#38;','&gt;','&apos;','&#x22;','&#x29;','&#x28;'), $input_str );
+    $return_str = str_ireplace( '%3Cscript', '', $return_str );
+    return $return_str;
+}
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
    /*
@@ -13,6 +18,9 @@ header("Content-Type: application/json; charset=UTF-8");
     @$transactionId = $request->transactionId;
     @$personal_lib= $request->personal_lib;
     @$personal_shelf= $request->personal_shelf;
+    $personal_lib=xss_cleaner($personal_lib);
+    $personal_shelf=xss_cleaner($personal_shelf);
+
     $database = "bookshelf";
     switch ($transactionId) {
 
@@ -127,3 +135,4 @@ header("Content-Type: application/json; charset=UTF-8");
             };
 	    echo json_encode($response);
 ?>
+

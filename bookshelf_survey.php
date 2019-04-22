@@ -13,10 +13,10 @@ $(document).ready(function() {
 
 
 
+    /*****************************************
     $('#help_button').click(function(){
         $('#help_page').toggle();
     });
-    /*****************************************
     $("#view_library").click(function(event) {
                $.post( 
                   "result.php",
@@ -165,7 +165,7 @@ table tr:nth-child(even) {
            
             <div class="row row_m_top">
 		    <div class="col-md-3 bordered ">
-		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="help_button">Help</button>
+		        <button ng-click="helpPage()" type="button" class="btn btn-primary btn-lg btn-block" id="help_button">Help</button>
                     </div>
 		    <div class="col-md-3 bordered ">
 		        <button ng-click="reloadPage();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Reset</button>
@@ -180,7 +180,22 @@ table tr:nth-child(even) {
 		    <div class="col-md-3 bordered ">
                     </div>
                     <div class="col-md-6">
-                           <input value='' ng-model="personal_lib" class="forms-control input-lg" id="nick_in" type="text" placeholder="Optional not required ..." name="nick">
+<!--
+                        <form name="personalLib">
+                           <input value='' ng-model="personal_lib" class=" input-lg"  ng-pattern="/^[a-zA-Z_-.\s]*$/" id="nick_in" type="text" placeholder="Optional not required ..." name="personal_lib">
+                            <div ng-messages="personalLib.personal_lib.$error">
+                                <div ng-message="pattern">Invalid characters.
+                            </div>
+                        </div> 
+                        </form>
+-->
+				<form name="personalLibForm">
+				  <input ng-model="personal_lib" name="personal_lib" ng-pattern="/^[a-zA-Z_-]*$/" class="input-lg"  placeholder="Optional not required ..." value='' />
+				  <div ng-messages="personalLibForm.personal_lib.$error">
+				      <div style="color:blue" ng-message="pattern">Invalid characters.</div>
+				  </div>
+				</form>
+				
                     </div>
             </div>
             <div class="row ">
@@ -198,7 +213,16 @@ table tr:nth-child(even) {
 		    <div class="col-md-3 bordered ">
                     </div>
                     <div class="col-md-6">
+				<form name="personalShelfForm">
+				  <input ng-model="personal_shelf" name="personal_shelf" ng-pattern="/^[a-zA-Z_-]*$/" class="input-lg"  placeholder="Optional not required ..." value='' />
+				  <div ng-messages="personalShelfForm.personal_shelf.$error">
+				      <div style="color:blue" ng-message="pattern">Invalid characters.</div>
+				  </div>
+				</form>
+	
+<!--
                            <input value='' ng-model="personal_shelf" class="forms-control input-lg" id="shelf_in" type="text" placeholder="Optional not required ..." name="bs_personal">
+-->
                     </div>
             </div>
 
@@ -221,11 +245,11 @@ table tr:nth-child(even) {
 <div>
 </div>
 
-  <table border="1">
+  <table border="1" ng-show="showLibrary()">
     <tr>
         <th ng-repeat="column in cols">{{column}}</th>
     </tr>
-    <tr ng-repeat="row in rows">
+    <tr ng-repeat="row in rows" class="row_class" ng-click="rowSelected(this)">
       <td ng-repeat="column in cols">{{row[column]}}</td>
     </tr>
   </table>
@@ -264,6 +288,7 @@ app.directive('ngEnter', function () {
 
       console.log('entering in app.controller val scope:'+$scope);
       $scope.google_book_title = '';
+      $scope.personal_lib = "";
       $scope.searchTerm = "";
       $scope.message = 'hello world';
       purchaseSite_p1 = "https://www.bookfinder.com/search/?lang=en&currency=USD&ac=qr&isbn=";
@@ -271,13 +296,50 @@ app.directive('ngEnter', function () {
       fetch(0);
       $scope.index = 0;
       $scope.tables = [];
-      
+       displayScreen = function(s) {
+          
+      }
+      $scope.helpPage = function() {
+
+            $scope.showSearch = function(){
+                return false;
+            }
+            $scope.showLibrary = function() {
+                return false;
+            }
+            $scope.showHelp = function () {
+                return true;
+            }
+      }
+
+      $scope.rowSelected = function(x) {
+          $scope.google_book_id = x.row.googleid;
+          console.log('here within rowSelected');
+          fetch(1);
+          $scope.showSearch = function(){
+             return true;
+          }
+	  $scope.showLibrary = function() {
+		return false;
+	  }
+	  $scope.showHelp = function () {
+		return false;
+	  }
+      }
+ 
+     
       $scope.viewLibrary = function(){
             if (typeof $scope.searchTerm == 'undefined') {$scope.searchTerm = '';}
             if (typeof $scope.personal_lib == 'undefined') {$scope.personal_lib = '';}
             if (typeof $scope.personal_shelf == 'undefined') {$scope.personal_shelf = '';}
             $scope.showSearch = false;
             $scope.showSearch = function(){
+                return false;
+            }
+            $scope.showLibrary = function() {
+                return true;
+            }
+            $scope.showHelp = function () {
                 return false;
             }
            var request = $http({
@@ -291,13 +353,12 @@ app.directive('ngEnter', function () {
 		    },
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-
-                
+                    
 		request.success(function (result) {
                 $scope.rows = result;
                 $scope.cols = Object.keys($scope.rows[0]);
-                });
-        }
+            });
+        };
 
       $scope.saveBook = function(){
           console.log('here within saveBook');
@@ -313,7 +374,6 @@ app.directive('ngEnter', function () {
 		    },
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-
                 
 		request.success(function (result) {
                 $scope.message = result;
@@ -343,7 +403,13 @@ app.directive('ngEnter', function () {
        fetch(0);
        $scope.showSearch = function(){
             return true;
-        }
+       }
+       $scope.showLibrary = function() {
+            return false;
+       }
+       $scope.showHelp = function () {
+           return false;
+       }
 }
 
     function fetch(getType) {
@@ -401,6 +467,7 @@ app.directive('ngEnter', function () {
         }
       console.log("now within update:"+book.volumeInfo.title)
     };
+
     function bufferToHex(buffer) {
             var s = '', h = '0123456789ABCDEF';
                 (new Uint8Array(buffer)).forEach((v) => { s += h[v >> 4] + h[v & 15];  });

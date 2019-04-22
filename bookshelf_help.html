@@ -1,7 +1,7 @@
 <div  class="container  "  style="text-align:left">
     <div class=row>
 
-    <div style="display:none" class="col-md-8 display_text "  id="help_page">
+    <div ng-show="showHelp()" class="col-md-8 display_text "  id="help_page">
 <h2> Help Page </h2>
 <p>This tool allows a person to recommend a book to the Saker BookShelf. In addition it allows an individual to maintain their own library of books and sub divided by bookshelfs if desired. Google books api is used to finds and obtain book info. Google has quotas so at times this tools may fail to work if we exceed our daily quota. <br> 
 The Saker database will contain all books recommended by our readers and will
