@@ -119,13 +119,14 @@ table tr:nth-child(even) {
 	</p>
         </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-4">
         <div class="row">
             <div>
-                <h2 id='book-heading'>Favorite Books</h2>
+                <h2 id='book-heading'>Favorites</h2>
             </div>
         </div>
     </div>
+    <div class="col-md-4"></div class="col-md-4">
      <div class="col-md-8">
         <div class="row">
             <div>
@@ -190,7 +191,7 @@ table tr:nth-child(even) {
                         </form>
 -->
 				<form name="personalLibForm">
-				  <input ng-model="personal_lib" name="personal_lib" ng-pattern="/^[a-zA-Z_-]*$/" class="input-lg"  placeholder="Optional not required ..." value='' />
+				  <input ng-model="personal_lib" name="personal_lib" ng-pattern="/^[\w\-\_\s\.]+$/" class="input-lg"  placeholder="Optional not required ..." value='' />
 				  <div ng-messages="personalLibForm.personal_lib.$error">
 				      <div style="color:blue" ng-message="pattern">Invalid characters.</div>
 				  </div>
@@ -235,7 +236,7 @@ table tr:nth-child(even) {
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
      <div id = "stage" style = "background-color:cc0;">
-<p> hello world {{message}}</p>
+<p> System Msg {{message}}</p>
       </div>
 
 <?php
@@ -245,7 +246,7 @@ table tr:nth-child(even) {
 <div>
 </div>
 
-  <table border="1" ng-show="showLibrary()">
+  <table border="1" ng-show="showLibrary">
     <tr>
         <th ng-repeat="column in cols">{{column}}</th>
     </tr>
@@ -296,35 +297,68 @@ app.directive('ngEnter', function () {
       fetch(0);
       $scope.index = 0;
       $scope.tables = [];
-       displayScreen = function(s) {
-          
-      }
-      $scope.helpPage = function() {
+      $scope.showSearch = false;
+      $scope.showLibrary = false;
+      $scope.showHelp = false;
 
-            $scope.showSearch = function(){
-                return false;
-            }
-            $scope.showLibrary = function() {
-                return false;
-            }
-            $scope.showHelp = function () {
-                return true;
-            }
+      
+      showPage= function(s) {
+
+          $scope.showSearch = false;
+          $scope.showLibrary = false;
+          $scope.showHelp = false;
+          
+          switch(s) {
+              
+          case 'helpSection':
+
+              $scope.showHelp = true;
+              break;
+          
+
+	  case 'librarySection': 
+              $scope.showLibrary = true;
+              break;
+		
+	  
+	  case 'searchSection': 
+              $scope.showSearch = true;
+              break;
+          
+	  case 'deleteSection': 
+              break;
+
+	  case 'reloadSection': 
+            
+                $scope.showSearch = false;
+                $scope.showLibrary = false;
+                $scope.showHelp = false;
+                break;
+
+       	  case 'allOff': 
+            
+                $scope.showSearch = false;
+                $scope.showLibrary = false;
+                $scope.showHelp = false;
+                break;
+
+          default:
+
+                $scope.showSearch = false;
+                $scope.showLibrary = false;
+                $scope.showHelp = false;
+          }
+      }
+
+      $scope.helpPage = function() {
+        showPage('helpSection');
       }
 
       $scope.rowSelected = function(x) {
           $scope.google_book_id = x.row.googleid;
           console.log('here within rowSelected');
           fetch(1);
-          $scope.showSearch = function(){
-             return true;
-          }
-	  $scope.showLibrary = function() {
-		return false;
-	  }
-	  $scope.showHelp = function () {
-		return false;
-	  }
+          showPage('searchSection');
       }
  
      
@@ -333,16 +367,8 @@ app.directive('ngEnter', function () {
             if (typeof $scope.personal_lib == 'undefined') {$scope.personal_lib = '';}
             if (typeof $scope.personal_shelf == 'undefined') {$scope.personal_shelf = '';}
             $scope.showSearch = false;
-            $scope.showSearch = function(){
-                return false;
-            }
-            $scope.showLibrary = function() {
-                return true;
-            }
-            $scope.showHelp = function () {
-                return false;
-            }
-           var request = $http({
+            showPage('librarySection');
+            var request = $http({
 		    method: "post",
 		    url: "/result.php",
                     data: {
@@ -356,10 +382,13 @@ app.directive('ngEnter', function () {
                     
 		request.success(function (result) {
                 $scope.rows = result;
-                $scope.cols = Object.keys($scope.rows[0]);
+                if(typeof $scope.rows[0] == 'undefined'){
+                    $scope.message = 'Not found in Library';
+                } else {
+                   $scope.cols = Object.keys($scope.rows[0]);
+                }
             });
         };
-
       $scope.saveBook = function(){
           console.log('here within saveBook');
           if ($scope.google_book_id == '') {return;}
@@ -383,6 +412,7 @@ app.directive('ngEnter', function () {
 
       $scope.reloadPage = function(){
           console.log('here within reloadpage');
+          showPage('reloadSection');
           window.location.reload();
       }
 
@@ -396,20 +426,12 @@ app.directive('ngEnter', function () {
     }
     ***********/
 
-    $scope.searchBook = function() {
+    $scope.searchBook = function(){
         console.log('got click from search'+$scope.searchTerm);
         $scope.google_book_title = $scope.searchTerm;
         console.log('hexdump of searchterm:'+$scope.searchTerm.toString(16));
        fetch(0);
-       $scope.showSearch = function(){
-            return true;
-       }
-       $scope.showLibrary = function() {
-            return false;
-       }
-       $scope.showHelp = function () {
-           return false;
-       }
+       showPage('searchSection');
 }
 
     function fetch(getType) {
@@ -418,18 +440,27 @@ app.directive('ngEnter', function () {
             $http.get("https://www.googleapis.com/books/v1/volumes/"+ $scope.google_book_id).then(function(res2) {
                 $scope.google_book_id  = res2.data.id;
                 $scope.bookInfo = res2.data.volumeInfo;
+                $scope.bookInfo.description = strip_html_tags(res2.data.volumeInfo.description);
                 $scope.saleInfo = res2.data.saleInfo;
         //        $scope.searchTerm = res2.data.volumeInfo.title;
-                $scope.google_book_title = $scope.bookInfo.title;
 
-                isbnRe = /ISBN/;
-                if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
-                    $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
-                }
-            });
-            $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.google_book_title).then(function(res) {
-                 $scope.relatedBooks = res.data.items;
-           
+                console.log('within fetch type 1');
+                $scope.google_book_title = $scope.bookInfo.title;
+                if (typeof $scope.bookInfo.industryIdentifiers != 'undefined') {
+                        isbnRe = /ISBN/;
+	                if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
+	                    $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
+                        } else {
+                            $scope.message ='No ISBN number for book';
+                        }     
+                } else {
+                            $scope.message = 'No Industry Identifier eg ISBN for book';
+                            console.log('undefined industryIdentifiers');
+                }     
+                
+                $http.get("https://www.googleapis.com/books/v1/volumes?q=" + $scope.google_book_title).then(function(res) {
+                     $scope.relatedBooks = res.data.items;
+                });
             });
         } else {
 
@@ -443,12 +474,15 @@ app.directive('ngEnter', function () {
                  $scope.bookInfo = res.data.items[0].volumeInfo;
                  $scope.saleInfo = res.data.items[0].saleInfo;
                  $scope.related = res.data;
-         //        $scope.searchTerm = res.data.items[0].volumeInfo.title;
+                 $scope.searchTerm = res.data.items[0].volumeInfo.title;
                  $scope.google_book_title = $scope.bookInfo.title;
 
-                isbnRe = /ISBN/;
-                if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
-                    $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
+                console.log('within fetch type 2');
+                if ($scope.bookInfo.industryIdentifiers[0]['type'] != null) {
+                    isbnRe = /ISBN/;
+                    if (isbnRe.test($scope.bookInfo.industryIdentifiers[0]['type'])) {
+                        $scope.purchaseSite = purchaseSite_p1+$scope.bookInfo.industryIdentifiers[0]['identifier']+purchaseSite_p2;
+                    }
                 }
               });
         }
@@ -474,6 +508,16 @@ app.directive('ngEnter', function () {
                 return s;
                 
     }
+    function strip_html_tags(str)
+    {
+           if ((str==null) || (str=='' ))
+                      return ' ';
+             else
+                    str = str.toString();
+             return str.replace(/<[^>]*>/g, '');
+           
+    }
+
 })
 </script>
 </body>

@@ -147,7 +147,7 @@ ul.rel-results {
 
 </style>
 <div>
-  <div ng-show='showSearch();' class="container-fluid outerdiv">
+  <div ng-show='showSearch' ng-cloak class="container-fluid outerdiv">
       <!--
    <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -170,7 +170,7 @@ ul.rel-results {
         <img ng-src="{{bookInfo.imageLinks.smallThumbnail}}" class="thumbnail animated flip movie-poster">
 
         <span class="span-outer">
-          <a href="https://books.google.com/{{ bookInfo.previewLink }}" target="_blank">{{bookInfo.title}}</a>
+          <a href="{{ bookInfo.previewLink }}" target="_blank">{{bookInfo.title}}</a>
         </span>, {{bookInfo.Year}}
 
         <p><strong>Publisher:</strong> {{bookInfo.publisher}}
@@ -257,7 +257,8 @@ ul.rel-results {
                 <p> </p>
             </div>
            <div class="col-md-4">
-		        <a  class="btn btn-primary btn-lg btn-block" href="{{ purchaseSite }}" target="_blank">Purchase</a> </div>
+		        <a  class="btn btn-primary btn-lg btn-block" href="{{
+                            purchaseSite }}" target="_blank">Purchase Sites</a> </div>
            <div class="col-md-1">
                 <p> </p>
             </div>

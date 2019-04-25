@@ -1,9 +1,5 @@
 <?php
-function xss_cleaner($input_str) {
-    $return_str = str_replace( array('<',';','|','&','>',"'",'"',')','('), array('&lt;','&#58;','&#124;','&#38;','&gt;','&apos;','&#x22;','&#x29;','&#x28;'), $input_str );
-    $return_str = str_ireplace( '%3Cscript', '', $return_str );
-    return $return_str;
-}
+
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
    /*
@@ -18,8 +14,6 @@ header("Content-Type: application/json; charset=UTF-8");
     @$transactionId = $request->transactionId;
     @$personal_lib= $request->personal_lib;
     @$personal_shelf= $request->personal_shelf;
-    $personal_lib=xss_cleaner($personal_lib);
-    $personal_shelf=xss_cleaner($personal_shelf);
 
     $database = "bookshelf";
     switch ($transactionId) {
@@ -27,26 +21,41 @@ header("Content-Type: application/json; charset=UTF-8");
 	    case "viewLib":
 
 	            @$searchterm = $request->searchterm;
-	
-	            $query =  "SELECT knt,title,bookid,author,googleid 
-	                FROM wp_bookshelf  order by knt desc, title limit 50";
-		    if ( $searchterm == "" && $personal_lib == "") { 
-	                $query =  "SELECT knt,title,bookid,author,googleid 
-	                           FROM wp_bookshelf  order by knt desc, title limit 50";
-		    }
-		
-		    if ( $searchterm != "" && $personal_lib == "") { 
-	                $query =  "SELECT knt,title,bookid,author,googleid 
-	                           FROM wp_bookshelf   
-	                           where (title like '%$searchterm%' or author like '%$searchterm%' or bookid = '$searchterm') 
-	                           order by knt desc, title limit 50 ";
-		    }
-		
-		    if (  $personal_lib != "") { 
-	                $query = "select a.title,a.author,a.bookid,b.nick_id,b.shelf_name,a.knt,a.googleid
-	                          from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.bookid
-	                          where b.nick_id = '$personal_lib' order by  title";
-		    }
+	            
+                    while ($query == '') {
+
+
+		            if ( strlen($searchterm) == 1) { 
+		                $query =  "SELECT knt,title,bookid,author,googleid 
+		                           FROM wp_bookshelf where title like '$searchterm%' order by  title ";
+                                break;
+			    }
+
+
+			    if ( $searchterm == "" && $personal_lib == "") { 
+		                $query =  "SELECT knt,title,bookid,author,googleid 
+		                           FROM wp_bookshelf  order by knt desc, title limit 50";
+                                break;
+			    }
+			
+				    if ( $searchterm != "" && $personal_lib == "") { 
+		                $query =  "SELECT knt,title,bookid,author,googleid 
+		                           FROM wp_bookshelf   
+		                           where (title like '%$searchterm%' or author like '%$searchterm%' or bookid = '$searchterm') 
+		                           order by knt desc, title limit 50 ";
+                                break;
+			    }
+			
+			    if (  $personal_lib != "") { 
+		                $query = "select a.title,a.author,a.bookid,b.nick_id,b.shelf_name,a.knt,a.googleid
+		                          from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.bookid
+		                          where b.nick_id = '$personal_lib' order by  title";
+                                break;
+	                    }
+
+		            $query =  "SELECT knt,title,bookid,author,googleid 
+		                FROM wp_bookshelf  order by knt desc, title limit 50";
+                    }
 		
 		    $host     = "localhost";
 		    $user     = "herb";
@@ -72,15 +81,21 @@ header("Content-Type: application/json; charset=UTF-8");
                 $results = file_get_contents($url);
                 $request = json_decode($results);
                 $bookInfo = $request->volumeInfo;
-                    $id= $request->id;
-                    $title= str_replace("'","\'",$bookInfo->title);
-                    $subtitle= str_replace("'","\'", $bookInfo->subtitle);
-                    $author= str_replace("'","\'", $bookInfo->authors[0]);
-                    $publisher= str_replace("'","\'", $bookInfo->publisher);
-                    $ind_id= $bookInfo->industryIdentifiers[0]->identifier;
-                    $ind_type=  $bookInfo->industryIdentifiers[0]->type;
-                    $category=str_replace("'","\'", $bookInfo->categories[0]);
-                    $description= str_replace("'","\'", $bookInfo->description);
+
+		    $wpdb = new mysqli($host, $user, $password, $database);
+		    if ($wpdb->connect_errno) {
+	               $response['sqlerror'] = "$wpdb->connect_errno";
+	               break;
+		    }
+                     $id= mysqli_real_escape_string($wpdb ,$request->id);
+                    $title= mysqli_real_escape_string($wpdb , $bookInfo->title);
+                    $subtitle= mysqli_real_escape_string($wpdb ,  $bookInfo->subtitle);
+                    $author= mysqli_real_escape_string($wpdb ,  $bookInfo->authors[0]);
+                    $publisher= mysqli_real_escape_string($wpdb ,  $bookInfo->publisher);
+                    $ind_id= mysqli_real_escape_string($wpdb , $bookInfo->industryIdentifiers[0]->identifier);
+                    $ind_type=  mysqli_real_escape_string($wpdb , $bookInfo->industryIdentifiers[0]->type);
+                    $category=mysqli_real_escape_string($wpdb ,  $bookInfo->categories[0]);
+                    $description= mysqli_real_escape_string($wpdb ,  $bookInfo->description);
                     $sql = "
                         insert into wp_bookshelf
                      (googleid,
@@ -101,15 +116,9 @@ header("Content-Type: application/json; charset=UTF-8");
                     '$ind_id',
                     '$ind_type',
                     '$category',
-                    '$description'
-                    )    
+                    '$description')
                     on duplicate key update knt = knt + 1"; 
-
-		    $wpdb = new mysqli($host, $user, $password, $database);
-		    if ($wpdb->connect_errno) {
-	               $response['sqlerror'] = "$wpdb->connect_errno";
-	               break;
-		    }
+                    
 		    $response['query'] = $wpdb->query($sql);
 
                     if ($personal_lib == '') {
