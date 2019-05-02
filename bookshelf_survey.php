@@ -1,3 +1,4 @@
+<?php /* Template Name: BookShelf_Survey */ ?>
 <!DOCTYPE html> <head>
 <title> Saker BookShelf</title>
 <meta  content="HTML,CSS,XML,JavaScript" charset="utf-8">
@@ -5,7 +6,9 @@
 <link rel='stylesheet' href='https://material.angularjs.org/1.1.4/docs.css'>
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'>
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+<!--
 <link rel='stylesheet' href='new_bookshelf_survey.css'>
+-->
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
 <script>
@@ -102,6 +105,9 @@ table tr:nth-child(even) {
 .row_m_top{
     margin-top:15px;
 }
+.row_class:hover {
+    background-color: darksalmon;
+ }
 
 </style>
 
@@ -240,8 +246,8 @@ table tr:nth-child(even) {
       </div>
 
 <?php
-    readfile("./bookshelf_help.html");
-    readfile("./bookshelf_book.html");
+    readfile("/var/www/wordpress/wp-content/themes/yaaburnee-themes-child/bookshelf_help.html");
+    readfile("/var/www/wordpress/wp-content/themes/yaaburnee-themes-child/bookshelf_book.html");
 ?>
 <div>
 </div>

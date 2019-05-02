@@ -103,13 +103,14 @@ header("Content-Type: application/json; charset=UTF-8");
 	            bookid,
 	            ind_type,
 	            category,
-	            review
+	            review,
+                    knt
 		    )
-	                values (%s,%s,%s,%s,%s,%s,%s,%s,%s)                                   
+	                values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%d)                                   
 	                on duplicate key update knt = knt + 1
              "                                                                                                                                                                                                                                                                                                                                            
                ,                                                                                                                                                                                                                                                                                                                                          
-                  $id,$title,$subtitle,$author,$publisher,$ind_id,$ind_type,$category,$description)) ; 
+                  $id,$title,$subtitle,$author,$publisher,$ind_id,$ind_type,$category,$description,1)) ; 
 
                     if ($personal_lib == '') {
                         break;
