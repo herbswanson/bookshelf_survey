@@ -176,6 +176,8 @@ ul.rel-results {
         <p><strong>Publisher:</strong> {{bookInfo.publisher}}
       <br>
           <strong>Published Date:</strong> {{bookInfo.publishedDate}}
+      <br>
+      <strong>{{bookInfo.industryIdentifiers[0]['type']}}:</strong> {{bookInfo.industryIdentifiers[0]['identifier']}}
       </p>
 
         <p>{{bookInfo.description}}</p>

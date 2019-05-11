@@ -24,8 +24,9 @@ header("Content-Type: application/json; charset=UTF-8");
     @$transactionId = $request->transactionId;
     @$personal_lib= $request->personal_lib;
     @$personal_shelf= $request->personal_shelf;
-
+    $userIP = get_the_user_ip();
     $query = '';
+    $response['userip'] = $userIP;
     switch ($transactionId) {
 
 	    case "viewLib":
@@ -36,35 +37,42 @@ header("Content-Type: application/json; charset=UTF-8");
 
 
 		            if ( strlen($searchterm) == 1) { 
-		                $query =  "SELECT knt,title,bookid,author,googleid 
+		                $query =  "SELECT cnt,title,bookid,author,googleid 
 		                           FROM wp_bookshelf where title like '$searchterm%' order by  title ";
                                 break;
 			    }
 
 
 			    if ( $searchterm == "" && $personal_lib == "") { 
-		                $query =  "SELECT knt,title,bookid,author,googleid 
-		                           FROM wp_bookshelf  order by knt desc, title limit 50";
+		                $query =  "SELECT cnt,title,bookid,author,googleid 
+		                           FROM wp_bookshelf  order by cnt desc, title limit 50";
                                 break;
 			    }
 			
 				    if ( $searchterm != "" && $personal_lib == "") { 
-		                $query =  "SELECT knt,title,bookid,author,googleid 
+		                $query =  "SELECT cnt,title,bookid,author,googleid 
 		                           FROM wp_bookshelf   
 		                           where (title like '%$searchterm%' or author like '%$searchterm%' or bookid = '$searchterm') 
-		                           order by knt desc, title limit 50 ";
+		                           order by cnt desc, title limit 50 ";
                                 break;
 			    }
 			
-			    if (  $personal_lib != "") { 
-		                $query = "select a.title,a.author,a.bookid,b.nick_id,b.shelf_name,a.knt,a.googleid
+			    if (  $personal_lib != "" && $searchterm == "") { 
+		                $query = "select a.title,a.author,a.bookid,b.library_name,b.shelf_name,a.cnt,a.googleid
 		                          from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.book_id
-		                          where b.nick_id = '$personal_lib' order by  title";
+		                          where b.library_name = '$personal_lib' order by  shelf_name,title";
                                 break;
 	                    }
 
-		            $query =  "SELECT knt,title,bookid,author,googleid 
-		                FROM wp_bookshelf  order by knt desc, title limit 50";
+			    if (  $personal_lib != "" && $searchterm != "") { 
+		                $query = "select a.title,a.author,a.bookid,b.library_name,b.shelf_name,a.cnt,a.googleid
+		                          from wp_bookshelf a  inner join  wp_bookshelf_personal b on a.bookid=b.book_id
+		                          where (b.library_name = '$personal_lib' and (title like '%$searchterm%' or author like '%$searchterm%'))order by  shelf_name,title";
+                                break;
+	                    }
+
+		            $query =  "SELECT cnt,title,bookid,author,googleid 
+		                FROM wp_bookshelf  order by cnt desc, title limit 50";
                     }
 
 		    $rows = array();
@@ -78,7 +86,7 @@ header("Content-Type: application/json; charset=UTF-8");
 	            break;
             case "saveBook":
                 @$googleid = $request->googleid;
-                $url = "https://www.googleapis.com/books/v1/volumes/" . $googleid;
+	        $url = "https://www.googleapis.com/books/v1/volumes/" . $googleid;
                 $results = file_get_contents($url);
                 $request = json_decode($results);
                 $bookInfo = $request->volumeInfo;
@@ -91,6 +99,24 @@ header("Content-Type: application/json; charset=UTF-8");
                 $ind_type=   $bookInfo->industryIdentifiers[0]->type;
                 $category=  $bookInfo->categories[0];
                 $description=$bookInfo->description;
+	        $query =  "SELECT googleid from wp_bookshelf_ip where (googleid = '$googleid' and userip = '$userIP')";
+
+		$iprec_test = $wpdb->get_results($query);
+                if ($iprec_test != null) {
+                    goto skip_rec_insert;
+                }
+
+                $rcode = $wpdb->query($wpdb->prepare(
+                    "
+                        insert into `wp_bookshelf_ip`
+                        (
+                        googleid,
+                        userip
+                        )
+                            values (%s,%s)
+                    ",
+                        $googleid,$userIP
+                        ));
  		$response['insert_book'] = $wpdb->query($wpdb->prepare(                
             	"                                           
 	                insert into `wp_bookshelf`                                                           
@@ -104,25 +130,26 @@ header("Content-Type: application/json; charset=UTF-8");
 	            ind_type,
 	            category,
 	            review,
-                    knt
+                    cnt
 		    )
 	                values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%d)                                   
-	                on duplicate key update knt = knt + 1
-             "                                                                                                                                                                                                                                                                                                                                            
-               ,                                                                                                                                                                                                                                                                                                                                          
+	                on duplicate key update cnt = cnt + 1
+             "
+               ,
                   $id,$title,$subtitle,$author,$publisher,$ind_id,$ind_type,$category,$description,1)) ; 
 
+skip_rec_insert:
                     if ($personal_lib == '') {
                         break;
                     }
 		    $response['insert_shelf'] = $wpdb->query($wpdb->prepare(
             	    "
                     insert ignore into wp_bookshelf_personal 
-                (nick_id,book_id,shelf_name)
-                values (%s,%s,%s)
+                (library_name,book_id,shelf_name,googleid)
+                values (%s,%s,%s,%s)
             "
              ,
-                     $personal_lib,$ind_id,$personal_shelf));
+                     $personal_lib,$ind_id,$personal_shelf,$id));
                     $response['at-end']	= "got to save book block";
                     break;
                     
