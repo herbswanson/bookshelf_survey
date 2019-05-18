@@ -13,6 +13,7 @@
     define('WP_USE_THEMES', false);
     global $wp, $wp_query, $wp_the_query, $wp_rewrite, $wp_did_header, $wpdb;
     require(BASE_PATH . 'wp-load.php');
+    $current_user = wp_get_current_user();
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
    /*
@@ -26,8 +27,22 @@ header("Content-Type: application/json; charset=UTF-8");
     @$personal_shelf= $request->personal_shelf;
     $userIP = get_the_user_ip();
     $query = '';
-    $response['userip'] = $userIP;
     switch ($transactionId) {
+
+            case "deleteBook":
+                @$googleid = $request->googleid;
+                $q1 = "delete from wp_bookshelf_personal where googleid = '$googleid'";
+                $q2 = "update wp_bookshelf set cnt = cnt -1 where `googleid` = '$googleid' and cnt > 1";
+                if(current_user_can('administrator')) {
+                    $response['bookDelete_admin_lib'] = $wpdb->delete(wp_bookshelf,array('googleid' => $googleid));
+                    $response['bookDelete_admin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid));
+                    $response['bookDelete_admin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid));
+                    break;
+                }
+                $response['bookDelete_nonadmin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid));
+                $response['bookDelete_nonadmin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid));
+                $response['bookDelete_nonadmin_bookshelf'] = $wpdb->query($q2);
+                break;
 
 	    case "viewLib":
 
@@ -37,23 +52,23 @@ header("Content-Type: application/json; charset=UTF-8");
 
 
 		            if ( strlen($searchterm) == 1) { 
-		                $query =  "SELECT cnt,title,bookid,author,googleid 
+		                $query =  "SELECT title,bookid,author,update_time,googleid 
 		                           FROM wp_bookshelf where title like '$searchterm%' order by  title ";
                                 break;
 			    }
 
 
 			    if ( $searchterm == "" && $personal_lib == "") { 
-		                $query =  "SELECT cnt,title,bookid,author,googleid 
-		                           FROM wp_bookshelf  order by cnt desc, title limit 50";
+		                $query =  "SELECT title,bookid,author,update_time,googleid 
+		                           FROM wp_bookshelf  order by update_time desc, title limit 50";
                                 break;
 			    }
 			
 				    if ( $searchterm != "" && $personal_lib == "") { 
-		                $query =  "SELECT cnt,title,bookid,author,googleid 
+		                $query =  "SELECT title,bookid,author,update_time,googleid 
 		                           FROM wp_bookshelf   
 		                           where (title like '%$searchterm%' or author like '%$searchterm%' or bookid = '$searchterm') 
-		                           order by cnt desc, title limit 50 ";
+		                           order by update_time desc, title limit 50 ";
                                 break;
 			    }
 			
@@ -71,8 +86,8 @@ header("Content-Type: application/json; charset=UTF-8");
                                 break;
 	                    }
 
-		            $query =  "SELECT cnt,title,bookid,author,googleid 
-		                FROM wp_bookshelf  order by cnt desc, title limit 50";
+		            $query =  "SELECT title,bookid,author,update_time,googleid 
+		                FROM wp_bookshelf  order by update_time desc, title limit 50";
                     }
 
 		    $rows = array();
@@ -106,7 +121,7 @@ header("Content-Type: application/json; charset=UTF-8");
                     goto skip_rec_insert;
                 }
 
-                $rcode = $wpdb->query($wpdb->prepare(
+                $response['insert_book_ip'] = $wpdb->query($wpdb->prepare(
                     "
                         insert into `wp_bookshelf_ip`
                         (
@@ -142,7 +157,7 @@ skip_rec_insert:
                     if ($personal_lib == '') {
                         break;
                     }
-		    $response['insert_shelf'] = $wpdb->query($wpdb->prepare(
+		    $response['insert_lib'] = $wpdb->query($wpdb->prepare(
             	    "
                     insert ignore into wp_bookshelf_personal 
                 (library_name,book_id,shelf_name,googleid)
@@ -150,7 +165,6 @@ skip_rec_insert:
             "
              ,
                      $personal_lib,$ind_id,$personal_shelf,$id));
-                    $response['at-end']	= "got to save book block";
                     break;
                     
             default:

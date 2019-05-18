@@ -161,10 +161,10 @@ table tr:nth-child(even) {
 		        <button  ng-click='saveBook()' type="button" class="btn btn-primary btn-lg btn-block" id="save_button">Save Book</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button  ng-click='viewLibrary();' type="button" class="btn btn-primary btn-lg btn-block" id="view_library">View Library</button> 
+		        <button  ng-click='viewLibrary();' type="button" class="btn btn-primary btn-lg btn-block" id="view_library">Search Library</button> 
                     </div>
 		    <div class="col-md-3 bordered border-right-0">
-		        <button  type="button" class="btn btn-primary btn-lg btn-block" id="delete_button">Delete Book</button>
+		        <button  ng-click="deleteBook()" type="button" class="btn btn-primary btn-lg btn-block" id="delete_button" ng-disabled="isDisabled">Delete Book</button> 
                     </div>
  
             </div>
@@ -177,7 +177,16 @@ table tr:nth-child(even) {
 		    <div class="col-md-3 bordered ">
 		        <button ng-click="reloadPage();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Reset</button>
                     </div>
-                    <div class="col-md-6">
+		    <div class="col-md-3 bordered ">
+		        <button ng-click="loadSpeadsheet();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">SpreadSheet</button>
+                    </div>
+		    <div class="col-md-3 bordered ">
+                    </div>
+            </div>
+            <div class="row row_m_top">
+		    <div class="col-md-6 bordered ">
+                    </div>
+                    </div>
 			   <label style="font-size:16px; font-weight:800; " for="inputlg">My Library (Name)</label>
                     </div>
             </div>
@@ -306,6 +315,7 @@ app.directive('ngEnter', function () {
       $scope.showSearch = false;
       $scope.showLibrary = false;
       $scope.showHelp = false;
+      $scope.isDisabled = true;
 
       
       showPage= function(s) {
@@ -360,10 +370,34 @@ app.directive('ngEnter', function () {
         showPage('helpSection');
       }
 
+      $scope.deleteBook = function () {
+          console.log('here within deleteBook');
+          if ($scope.google_book_id == '') {return;}
+          var request = $http({
+		    method: "post",
+		    url: "/result.php",
+                    data: {
+                            transactionId: 'deleteBook',
+                            googleid: $scope.google_book_id,
+                            personal_lib: $scope.personal_lib,
+                            personal_shelf: $scope.personal_shelf
+		    },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                
+		request.success(function (result) {
+                $scope.message = result;
+                $scope.isDisabled = true;
+                $scope.viewLibrary();
+                });
+         
+      }
+
       $scope.rowSelected = function(x) {
           $scope.google_book_id = x.row.googleid;
           console.log('here within rowSelected');
           fetch(1);
+          $scope.isDisabled = false;
           showPage('searchSection');
       }
  
