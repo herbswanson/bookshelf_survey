@@ -32,16 +32,28 @@ header("Content-Type: application/json; charset=UTF-8");
             case "deleteBook":
                 @$googleid = $request->googleid;
                 $q1 = "delete from wp_bookshelf_personal where googleid = '$googleid'";
-                $q2 = "update wp_bookshelf set cnt = cnt -1 where `googleid` = '$googleid' and cnt > 1";
+                $q2 = "update wp_bookshelf set cnt = cnt -1 where `googleid` = '$googleid' and cnt >= 1";
                 if(current_user_can('administrator')) {
                     $response['bookDelete_admin_lib'] = $wpdb->delete(wp_bookshelf,array('googleid' => $googleid));
                     $response['bookDelete_admin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid));
                     $response['bookDelete_admin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid));
                     break;
+                } 
+                if ($personal_lib == '') {
+                    $response['bookDelete_nonadmin_personal'] = 0;
+                    $response['bookDelete_nonadmin_ip'] = 0;
+                    $response['bookDelete_nonadmin_bookshelf'] = 0;
+                    break;
                 }
-                $response['bookDelete_nonadmin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid));
+                $response['bookDelete_nonadmin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid,'library_name' => $personal_lib));
+                if ($response['bookDelete_nonadmin_personal'] == 0 ) {
+                    $response['bookDelete_nonadmin_ip'] = 0;
+                    $response['bookDelete_nonadmin_bookshelf'] = 0;
+                    break;
+                }
                 $response['bookDelete_nonadmin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid));
-                $response['bookDelete_nonadmin_bookshelf'] = $wpdb->query($q2);
+                $decrement_knt = $wpdb->query($q2);
+                $response['bookDelete_nonadmin_bookshelf'] = $wpdb->delete(wp_bookshelf,array('googleid' => $googleid,'cnt' => 0));
                 break;
 
 	    case "viewLib":

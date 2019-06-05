@@ -178,7 +178,10 @@ table tr:nth-child(even) {
 		        <button ng-click="reloadPage();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">Reset</button>
                     </div>
 		    <div class="col-md-3 bordered ">
-		        <button ng-click="loadSpeadsheet();"  type="button" class="btn btn-primary btn-lg btn-block" id="clear_button">SpreadSheet</button>
+                            <a href="/export_bookshelf.ods" download>
+                                <button type="button" class="btn btn-primary btn-lg btn-block">Download</button>
+                            </a>
+<!--		        <button  ng-click=downloadSpreadSheet() type="button" class="btn btn-primary btn-lg btn-block" id="download_button">Download Lib</button> -->
                     </div>
 		    <div class="col-md-3 bordered ">
                     </div>
@@ -186,7 +189,7 @@ table tr:nth-child(even) {
             <div class="row row_m_top">
 		    <div class="col-md-6 bordered ">
                     </div>
-                    </div>
+		    <div class="col-md-6 bordered ">
 			   <label style="font-size:16px; font-weight:800; " for="inputlg">My Library (Name)</label>
                     </div>
             </div>
@@ -250,9 +253,12 @@ table tr:nth-child(even) {
         </div> <!-- division containing forms and buttons -->
      </div> <!-- 8 column row 'forms & buttons & library' -->
   </div> <!-- four column row 'bird' plus the 8 column buttons forms & mylib -->
-     <div id = "stage" style = "background-color:cc0;">
-<p> System Msg {{message}}</p>
+     <div class="col-md-6" id = "stage" style = "background-color:cc0;">
+        <p style="font-size:16px; font-weight:800; color:blue; ">  {{message}}</p>
       </div>
+
+     <div class="col-md-6">
+     </div>
 
 <?php
     readfile("/var/www/wordpress/wp-content/themes/yaaburnee-themes-child/bookshelf_help.html");
@@ -306,7 +312,6 @@ app.directive('ngEnter', function () {
       $scope.google_book_title = '';
       $scope.personal_lib = "";
       $scope.searchTerm = "";
-      $scope.message = 'hello world';
       purchaseSite_p1 = "https://www.bookfinder.com/search/?lang=en&currency=USD&ac=qr&isbn=";
       purchaseSite_p2 = "&mode=basic&destination=us&new_used=*&st=sr";
       fetch(0);
@@ -372,6 +377,7 @@ app.directive('ngEnter', function () {
 
       $scope.deleteBook = function () {
           console.log('here within deleteBook');
+          console.log('personal_lib:'+$scope.personal_lib);
           if ($scope.google_book_id == '') {return;}
           var request = $http({
 		    method: "post",
@@ -386,7 +392,16 @@ app.directive('ngEnter', function () {
                 });
                 
 		request.success(function (result) {
-                $scope.message = result;
+                 $scope.message = result;
+          console.log('result'+{result});
+                 if (typeof result.bookDelete_nonadmin_personal !== 'undefined' && result.bookDelete_nonadmin_personal >= 1) {
+                        $scope.message = 'Book Deleted from your Library';
+                 }
+                 else if(typeof result.bookDelete_nonadmin_bookshelf !== 'undefined' && result.bookDelete_nonadmin_bookshelf >= 1 )
+                 {
+                        $scope.message = 'Book Deleted from general Library';
+                 }
+                 else {$scope.message = 'Book cannot be Deleted from General Library';}
                 $scope.isDisabled = true;
                 $scope.viewLibrary();
                 });
@@ -430,8 +445,8 @@ app.directive('ngEnter', function () {
             });
         };
       $scope.saveBook = function(){
-          console.log('here within saveBook');
-          if ($scope.google_book_id == '') {return;}
+          console.log('here within saveBook'+$scope.google_book_id);
+          if ($scope.google_book_id == '' || typeof  $scope.google_book_id === 'undefined') {return;}
           var request = $http({
 		    method: "post",
 		    url: "/result.php",
@@ -445,9 +460,29 @@ app.directive('ngEnter', function () {
                 });
                 
 		request.success(function (result) {
+                    console.log(result);
+                    console.log(Object.keys(result));
+                    console.log(result.insert_lib);
+                    console.log(result["insert_lib"]);
                 $scope.message = result;
+                    if (typeof result.insert_lib !== 'undefined' && result.insert_lib >= 1) {
+                        $scope.message = 'Book Added to your Library';
+                    }
+                    else if(typeof result.insert_book !== 'undefined' && result.insert_book >= 1 )
+                    {
+                        console.log('insert_book:'+result.insert_book);
+                        $scope.message = 'Book Added to general Library';
+                    }
+                    else {$scope.message = 'Book already in Library';}
+/*
+                    if (result.insert_book == 1 or result.insert_lib == 1) {
+                        console.log("got hit");
+                    }
+                    else {
+                        console.log("not hit");
+                    }
+                     */
                 });
-         
       }
 
       $scope.reloadPage = function(){
@@ -475,6 +510,7 @@ app.directive('ngEnter', function () {
 }
 
     function fetch(getType) {
+        $scope.message = '';
         if (typeof getType === "undefined") {var getType = 0;}
         if (getType == 1) {
             $http.get("https://www.googleapis.com/books/v1/volumes/"+ $scope.google_book_id).then(function(res2) {
