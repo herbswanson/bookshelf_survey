@@ -285,7 +285,8 @@ table tr:nth-child(even) {
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js'></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js'></script>
 <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
-<script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.4/angular-material.js'></script>
+<!--<script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.4/angular-material.js'></script> -->
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.1.4/angular-material.min.js'></script>
 <script>
 
          /*****************  app creation **************************/
