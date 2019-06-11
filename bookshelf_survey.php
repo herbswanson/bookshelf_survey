@@ -402,6 +402,10 @@ app.directive('ngEnter', function () {
                  {
                         $scope.message = 'Book Deleted from general Library';
                  }
+                 else if(typeof result.bookDelete_admin_lib !== 'undefined' && result.bookDelete_admin_lib >= 1 )
+                 {
+                        $scope.message = 'Admin Deleted Book from general Library';
+                 }
                  else {$scope.message = 'Book cannot be Deleted from General Library';}
                 $scope.isDisabled = true;
                 $scope.viewLibrary();

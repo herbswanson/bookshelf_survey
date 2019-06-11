@@ -10,3 +10,8 @@ grant file on *.* to 'vsaker_wp2'@'localhost';
 create table `wp_bookshelf_ip` (`googleid` char(64) not NULL, `userip` char(64) not NULL, primary key (`googleid`));
 
 create table `wp_bookshelf_personal` (`library_name` char(64) not null,`book_id` char(64) not null,`shelf_name` char(64),`googleid` char(64) not null,`date_added` timestamp, primary key (`library_name`,`book_id`));
+
+
+alter table wp_bookshelf_ip change googleid googleid char(64) collate utf8_bin;
+alter table wp_bookshelf change googleid googleid char(64) collate utf8_bin;
+alter table wp_bookshelf_personal change googleid googleid char(64) collate utf8_bin;
