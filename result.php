@@ -35,6 +35,7 @@ header("Content-Type: application/json; charset=UTF-8");
                 $q2 = "update wp_bookshelf set cnt = cnt -1 where `googleid` = '$googleid' and cnt >= 1";
                 $q3 = " select count(*) from wp_bookshelf_ip where googleid = '$googleid'";
                 $q4 = "select googleid,userip from wp_bookshelf_ip where googleid = '$googleid' and userip = '$userIP' ";
+                $q5 = "select count(*) from wp_bookshelf_personal where googleid = '$googleid'";
                 $got_ip_hit = $wpdb->query($q4);
                 $knt = $wpdb->get_var($q3);
                 if(current_user_can('administrator')) {
@@ -43,7 +44,7 @@ header("Content-Type: application/json; charset=UTF-8");
                     $response['bookDelete_admin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid));
                     break;
                 } 
-                if ( $got_ip_hit == FALSE) {
+                if ( $got_ip_hit == FALSE && $personal_lib == '') {
                         $response['bookDelete_nonadmin_bookshelf'] = 0;
                         $response['bookDelete_nonadmin_personal'] = 0;
                         $response['bookDelete_nonadmin_ip'] = 0;
@@ -56,16 +57,28 @@ header("Content-Type: application/json; charset=UTF-8");
                     if ($knt == 1) {
                         $response['bookDelete_nonadmin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid,'userip' => $userIP));
                         $response['bookDelete_nonadmin_bookshelf'] = $wpdb->delete(wp_bookshelf,array('googleid' => $googleid));
+                        $response['bookDelete_admin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid));
                         break;
                     } elseif ($knt > 1) 
                     {
+                        $knt2 = $wpdb->get_var($q5);
+                        // if knt2 > 0 then in use in private lib
+                        if ($knt2 > 0) {
+                            $response['bookDelete_nonadmin_bookshelf'] = 0;
+                            $response['bookDelete_nonadmin_personal'] = 512;
+                            $response['bookDelete_nonadmin_ip'] = 0;
+                            break;
+                        }
+                        $response['bookDelete_nonadmin_bookshelf'] = 0;
+                        $response['bookDelete_nonadmin_personal'] = 0;
                         $response['bookDelete_nonadmin_ip'] = $wpdb->delete(wp_bookshelf_ip,array('googleid' => $googleid,'userip' => $userIP));
                         $decrement_knt = $wpdb->query($q2);
                         break;
                     }
                 } else {    
-                    $response['bookDelete_nonadmin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid,'library_name' => $personal_lib));
+                    $response['bookDelete_nonadmin_personal'] = $wpdb->delete(wp_bookshelf_personal,array('googleid' => $googleid,'library_name' => $personal_lib,'userip' => $userIP));
                     if ($response['bookDelete_nonadmin_personal'] == 0 ) {
+                        $response['bookDelete_nonadmin_personal'] = 513;
                         $response['bookDelete_nonadmin_ip'] = 0;
                         $response['bookDelete_nonadmin_bookshelf'] = 0;
                         break;
@@ -201,12 +214,12 @@ skip_rec_insert:
                     }
 		    $response['insert_lib'] = $wpdb->query($wpdb->prepare(
             	    "
-                    insert ignore into wp_bookshelf_personal 
-                (library_name,book_id,shelf_name,googleid)
-                values (%s,%s,%s,%s)
+                    insert into wp_bookshelf_personal 
+                (library_name,book_id,shelf_name,googleid,userip)
+                values (%s,%s,%s,%s,%s)
             "
              ,
-                     $personal_lib,$ind_id,$personal_shelf,$id));
+                     $personal_lib,$ind_id,$personal_shelf,$id,$userIP));
                     break;
                     
             default:

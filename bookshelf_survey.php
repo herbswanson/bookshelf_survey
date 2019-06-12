@@ -395,7 +395,13 @@ app.directive('ngEnter', function () {
 		request.success(function (result) {
                  $scope.message = result;
           console.log('result'+{result});
-                 if (typeof result.bookDelete_nonadmin_personal !== 'undefined' && result.bookDelete_nonadmin_personal >= 1) {
+                 if (typeof result.bookDelete_nonadmin_personal !== 'undefined' && result.bookDelete_nonadmin_personal == 512) {
+                        $scope.message = 'Book is in use in Private Libraries';
+                 }
+                else if(typeof result.bookDelete_nonadmin_personal !== 'undefined' && result.bookDelete_nonadmin_personal == 513) {
+                        $scope.message = 'Another reader has added this book .. (cannot remove)';
+                 }
+                 else if(typeof result.bookDelete_nonadmin_personal !== 'undefined' && result.bookDelete_nonadmin_personal >= 1) {
                         $scope.message = 'Book Deleted from your Library';
                  }
                  else if(typeof result.bookDelete_nonadmin_bookshelf !== 'undefined' && result.bookDelete_nonadmin_bookshelf >= 1 )
